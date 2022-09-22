@@ -35,11 +35,11 @@ RUN pip3 install -r requirements.txt
 ADD . /app/
 COPY entrypoint.sh .
 
-# copy entrypoint.sh
 COPY ./entrypoint.sh .
 RUN sed -i 's/\r$//g' /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
+COPY start-kafka.sh .
 
 # copy project
 ADD . /app/
