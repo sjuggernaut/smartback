@@ -11,4 +11,9 @@ urlpatterns = [
     path('personal', PersonalCharacteristicsCreateView.as_view()),
     path('personal/<str:pk>', PersonalCharacteristicsDetailUpdateView.as_view()),
 
+    path('physical', PhysicalActivityLevelCreateView.as_view()),
+    path('physical/<str:pk>', PhysicalActivityLevelDetailUpdateView.as_view()),
+
+    path('backpain', BackPainLevelCreateView.as_view()),
+    path('backpain/<str:pk>', BackPainLevelDetailUpdateView.as_view()),
 ]
