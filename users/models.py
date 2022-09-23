@@ -1,18 +1,27 @@
 from django.db import models
 import uuid
+from django.contrib.auth import get_user_model
 
 
 class PersonalCharacteristics(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True)
     birth_year = models.IntegerField(null=True, blank=True)
     height = models.FloatField(null=True, blank=True)
     gender = models.CharField(max_length=256, null=True, blank=True)
     ethnicity = models.CharField(max_length=256, null=True, blank=True)
     body_type = models.CharField(max_length=256, null=True, blank=True)
 
+    class Meta:
+        verbose_name = "Personal Characteristics"
+        verbose_name_plural = "Personal Characteristics"
+
+    def __str__(self):
+        return self.user.username.capitalize()
 
 class PhysicalActivityLevel(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True)
     activity_level_before_pain = models.CharField(max_length=256, null=True, blank=True)
     activity_level_during_pain = models.CharField(max_length=256, null=True, blank=True)
     regular_activity = models.CharField(max_length=256, null=True, blank=True)
@@ -21,6 +30,7 @@ class PhysicalActivityLevel(models.Model):
 
 class BackPainLevel(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True)
     back_pain_level = models.IntegerField(null=True, blank=True)
     is_job_heavy = models.BooleanField(null=True, blank=True)
     is_desk_work_all_day = models.BooleanField(null=True, blank=True)
@@ -31,6 +41,7 @@ class BackPainLevel(models.Model):
 
 class Diseases(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True)
     chronic_back_pain = models.BooleanField(null=True, blank=True)
     unsteady_gait = models.BooleanField(null=True, blank=True)
     bowel_bladder_symptoms = models.BooleanField(null=True, blank=True)
@@ -45,6 +56,7 @@ class Diseases(models.Model):
 
 class DecisionLevel2(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True)
     pain_since = models.CharField(max_length=256, null=True, blank=True)
     pain_location = models.CharField(max_length=256, null=True, blank=True)
     constant_pain = models.CharField(max_length=256, null=True, blank=True)

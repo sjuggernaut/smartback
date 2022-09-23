@@ -24,4 +24,6 @@ Login to Kafka Container: ``docker-compose exec kafka bash``
 - To consume a message from a topic (from beginning)
     - `` $KAFKA_HOME/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic semgsensor-alerts-local --from-beginning ``
 
+##### Authentication
 
+https://simpleisbetterthancomplex.com/tutorial/2018/11/22/how-to-implement-token-authentication-using-django-rest-framework.html
