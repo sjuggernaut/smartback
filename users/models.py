@@ -7,10 +7,18 @@ class PersonalCharacteristics(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True)
     birth_year = models.IntegerField(null=True, blank=True)
-    height = models.FloatField(null=True, blank=True)
+    height = models.FloatField(null=True, blank=True)  # in cms
+    weight = models.FloatField(null=True, blank=True)  # In kgs
     gender = models.CharField(max_length=256, null=True, blank=True)
     ethnicity = models.CharField(max_length=256, null=True, blank=True)
     body_type = models.CharField(max_length=256, null=True, blank=True)
+
+    def height_to_meters(self):
+        return self.height / 100
+
+    @property
+    def get_bmi(self):
+        return self.weight / (self.height_to_meters() * 2)
 
     class Meta:
         verbose_name = "Personal Characteristics"
@@ -18,6 +26,7 @@ class PersonalCharacteristics(models.Model):
 
     def __str__(self):
         return self.user.username.capitalize()
+
 
 class PhysicalActivityLevel(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)

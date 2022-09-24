@@ -6,7 +6,7 @@ from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
 import copy
 
-from users.models import PersonalCharacteristics, PhysicalActivityLevel, BackPainLevel
+from users.models import PersonalCharacteristics, PhysicalActivityLevel, BackPainLevel, Diseases, DecisionLevel2
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -89,4 +89,52 @@ class BackPainLevelDetailUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = BackPainLevel.objects.all()
     serializer_class = BackPainLevelUpdateSerializer
+    pagination_class = None
+
+
+class DiseasesCreateView(generics.CreateAPIView):
+    """
+    Create Diseases instance for a user
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = Diseases.objects.all()
+    serializer_class = DiseasesSerializer
+    pagination_class = None
+
+    def create(self, request, *args, **kwargs):
+        request.data["user"] = request.user.id
+        return super().create(request, args, kwargs)
+
+
+class DiseasesDetailUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    Retrieve or Update Diseases instance for a user
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = Diseases.objects.all()
+    serializer_class = DiseasesUpdateSerializer
+    pagination_class = None
+
+
+class DecisionLevel2CreateView(generics.CreateAPIView):
+    """
+    Create Decision Level 2 instance for a user
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = DecisionLevel2.objects.all()
+    serializer_class = DecisionLevel2Serializer
+    pagination_class = None
+
+    def create(self, request, *args, **kwargs):
+        request.data["user"] = request.user.id
+        return super().create(request, args, kwargs)
+
+
+class DecisionLevel2DetailUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    Retrieve or Update Decision Level 2 instance for a user
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = DecisionLevel2.objects.all()
+    serializer_class = DecisionLevel2UpdateSerializer
     pagination_class = None

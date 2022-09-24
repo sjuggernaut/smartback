@@ -40,7 +40,8 @@ INSTALLED_APPS = [
 
     'infra',
     'management',
-    'users'
+    'users',
+    'calibration'
 ]
 
 MIDDLEWARE = [

@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from users.models import PersonalCharacteristics, PhysicalActivityLevel, BackPainLevel
+from users.models import PersonalCharacteristics, PhysicalActivityLevel, BackPainLevel, Diseases, DecisionLevel2
 
 import logging
 
@@ -46,7 +46,7 @@ class PersonalCharacteristicsSerializer(serializers.ModelSerializer):
 class PersonalCharacteristicsUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonalCharacteristics
-        fields = ['birth_year', 'height', 'gender', 'ethnicity', 'body_type']
+        fields = ['birth_year', 'height', 'weight', 'gender', 'ethnicity', 'body_type']
 
 
 class PhysicalActivityLevelSerializer(serializers.ModelSerializer):
@@ -84,3 +84,49 @@ class BackPainLevelUpdateSerializer(serializers.ModelSerializer):
         model = BackPainLevel
         fields = ['back_pain_level', 'is_job_heavy', 'is_desk_work_all_day', 'healthcare_consult', 'pain_relief',
                   'is_taking_medication']
+
+
+class DiseasesSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=get_user_model().objects.all(),
+        default=serializers.CurrentUserDefault(),
+    )
+
+    class Meta:
+        model = Diseases
+        fields = '__all__'
+        read_only_fields = ("user",)
+
+
+class DiseasesUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Diseases
+        fields = ['chronic_back_pain', 'unsteady_gait', 'bowel_bladder_symptoms',
+                  'relief_with_rest', 'leg_pain', 'leukaemia', 'chemotherapy', 'gastrointestinal_carcinoma', 'surgery',
+                  'myositis']
+
+
+class DecisionLevel2Serializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=get_user_model().objects.all(),
+        default=serializers.CurrentUserDefault(),
+    )
+
+    class Meta:
+        model = DecisionLevel2
+        fields = '__all__'
+        read_only_fields = ("user",)
+
+
+class DecisionLevel2UpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DecisionLevel2
+        fields = ['pain_since',
+                  'pain_location',
+                  'constant_pain',
+                  'pain_start',
+                  'relation_physical_activity',
+                  'relation_rest',
+                  'is_pain_spreading',
+                  'pain_description'
+                  ]

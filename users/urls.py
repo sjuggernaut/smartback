@@ -16,4 +16,10 @@ urlpatterns = [
 
     path('backpain', BackPainLevelCreateView.as_view()),
     path('backpain/<str:pk>', BackPainLevelDetailUpdateView.as_view()),
+
+    path('diseases', DiseasesCreateView.as_view()),
+    path('diseases/<str:pk>', DiseasesDetailUpdateView.as_view()),
+
+    path('level2', DecisionLevel2CreateView.as_view()),
+    path('level2/<str:pk>', DecisionLevel2DetailUpdateView.as_view()),
 ]
