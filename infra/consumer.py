@@ -57,21 +57,25 @@ class Consumer(threading.Thread):
 
     def run(self):
         consumer = KafkaConsumer(
-            boostrap_servers=self._boostrap_servers,
+            bootstrap_servers=self._boostrap_servers,
             auto_offset_reset="earliest",
+            api_version=(0,11,5),
             group_id=self._group_id,
             consumer_timeout_ms=self._consumer_timeout_ms,
-            max_poll_iunterval_ms=_KAFKA_MAX_INT_VALUE,
+            # max_poll_iunterval_ms=_KAFKA_MAX_INT_VALUE,
             **self._kwargs
         )
         consumer.subscribe([self._topic])
+        print(f"Subscribing to topic: [{self._topic}]")
 
         while not self._stop_event.is_set():
+            print("Waiting for message")
             for message in consumer:
                 try:
-                    logger.info(f"Consuming {message.topic}-{message.partition}-{message.offset}")
+                    print(f"Consuming {message.topic}-{message.partition}-{message.offset}")
                     self._callback_function(message)
                 except Exception as exception:
+                    print("Exception while consuming")
                     logger.exception(f"The kafka event could not be consumed {exception}")
                 if self._stop_event.is_set():
                     break

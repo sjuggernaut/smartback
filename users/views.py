@@ -4,7 +4,6 @@ from rest_framework.permissions import AllowAny
 from users.serializers import *
 from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
-import copy
 
 from users.models import PersonalCharacteristics, PhysicalActivityLevel, BackPainLevel, Diseases, DecisionLevel2
 

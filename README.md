@@ -27,3 +27,11 @@ Login to Kafka Container: ``docker-compose exec kafka bash``
 ##### Authentication
 
 https://simpleisbetterthancomplex.com/tutorial/2018/11/22/how-to-implement-token-authentication-using-django-rest-framework.html
+
+### **To Connect to Kafka using Offset Explorer**
+
+_Use the PlainText Host value in the Advanced tab for the Bootstrap Servers field:_
+
+##### **Bootstrap Servers: 127.0.0.1:29094**
+
+`KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://127.0.0.1:29094`

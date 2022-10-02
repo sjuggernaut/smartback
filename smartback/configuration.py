@@ -14,7 +14,7 @@ def get_config(environment):
     if environment == _PRODUCTION_ENVIRONMENT:
         return _ProductionAlertConfiguration()
     if environment == _LOCAL_ENVIRONMENT:
-        return _LocalAlertConfiguration
+        return _LocalAlertConfiguration()
     if environment == _STAGING_ENVIRONMENT:
         pass
 
@@ -32,13 +32,13 @@ class _ProductionAlertConfiguration(AlertConfiguration):
         super(self.__class__, self).__init__(_PRODUCTION_ENVIRONMENT)
 
     def get_kafka_inertial_sensor_topic(self):
-        return f"inertial-sensor-alert-production"
+        return f"inertialsensor-alert-production"
 
     def get_kafka_ir_sensor_topic(self):
-        return f"ir-sensor-alert-production"
+        return f"irsensor-alert-production"
 
     def get_kafka_semg_sensor_topic(self):
-        return f"semg-sensor-alert-production"
+        return f"semgsensor-alert-production"
 
 
 class _LocalAlertConfiguration(AlertConfiguration):
@@ -46,13 +46,13 @@ class _LocalAlertConfiguration(AlertConfiguration):
         super(self.__class__, self).__init__(_LOCAL_ENVIRONMENT)
 
     def get_kafka_inertial_sensor_topic(self):
-        return "inertial-sensor-alert-local"
+        return "inertialsensor-alerts-local"
 
     def get_kafka_ir_sensor_topic(self):
-        return "ir-sensor-alert-local"
+        return "irsensor-alerts-local"
 
     def get_kafka_semg_sensor_topic(self):
-        return "semg-sensor-alert-local"
+        return "semgsensor-alerts-local"
 
 
 def _validated_get_from_env(environment_variable):
