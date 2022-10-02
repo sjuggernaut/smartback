@@ -56,29 +56,34 @@ class Consumer(threading.Thread):
         self._stop_event.set()
 
     def run(self):
-        consumer = KafkaConsumer(
-            bootstrap_servers=self._boostrap_servers,
-            auto_offset_reset="earliest",
-            api_version=(0,11,5),
-            group_id=self._group_id,
-            consumer_timeout_ms=self._consumer_timeout_ms,
-            # max_poll_iunterval_ms=_KAFKA_MAX_INT_VALUE,
-            **self._kwargs
-        )
-        consumer.subscribe([self._topic])
-        print(f"Subscribing to topic: [{self._topic}]")
+        try:
+            consumer = KafkaConsumer(
+                bootstrap_servers="kafka:29092",
+                auto_offset_reset="earliest",
+                api_version=(0, 10, 1),
+                # group_id=self._group_id,
+                group_id=None,
+                consumer_timeout_ms=self._consumer_timeout_ms,
+                max_poll_interval_ms=_KAFKA_MAX_INT_VALUE,
+                **self._kwargs
+            )
 
-        while not self._stop_event.is_set():
-            print("Waiting for message")
-            for message in consumer:
-                try:
-                    print(f"Consuming {message.topic}-{message.partition}-{message.offset}")
-                    self._callback_function(message)
-                except Exception as exception:
-                    print("Exception while consuming")
-                    logger.exception(f"The kafka event could not be consumed {exception}")
-                if self._stop_event.is_set():
-                    break
+            consumer.subscribe([self._topic])
+            print(f"Subscribing to topic: [{self._topic}] at {self._boostrap_servers}")
 
-        logger.info(f"Stop event received for consumer of topic [{self._topic}]. Consumption will be stopped")
-        consumer.close()
+            while not self._stop_event.is_set():
+                for message in consumer:
+                    try:
+                        print(f"Consuming {message.topic}-{message.partition}-{message.offset}")
+                        # self._callback_function(message)
+                    except Exception as exception:
+                        print("Exception while consuming")
+                        logger.exception(f"The kafka event could not be consumed {exception}")
+                    if self._stop_event.is_set():
+                        print("Stopping")
+                        break
+
+            logger.info(f"Stop event received for consumer of topic [{self._topic}]. Consumption will be stopped")
+            consumer.close()
+        except Exception as e:
+            print(f"Exception {e}")

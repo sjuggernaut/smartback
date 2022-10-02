@@ -35,3 +35,6 @@ _Use the PlainText Host value in the Advanced tab for the Bootstrap Servers fiel
 ##### **Bootstrap Servers: 127.0.0.1:29094**
 
 `KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://127.0.0.1:29094`
+
+
+Consumption started after network is added for services: kafka and zookeeper like backend.
