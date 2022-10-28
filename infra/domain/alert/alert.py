@@ -1,10 +1,10 @@
-from datetime import datetime
-import hashlib
-import json
-
 class Alert:
-    def __init__(self):
-        # Contain the model object for the kafka record
-        # Model object is one of the data models based on sensor type
-        # Sensor type is based on the topic
-        pass
+    def __init__(
+            self,
+            device_id,
+            command,
+            session
+    ):
+        self.device_id = device_id
+        self.command = command
+        self.session = session

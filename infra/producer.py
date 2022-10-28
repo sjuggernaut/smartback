@@ -5,7 +5,10 @@ from kafka import KafkaProducer
 class Producer:
     def __init__(self, kafka_producer_configuration, topic, **kwargs):
         self._kafka_producer = KafkaProducer(
-            bootstrap_servers=kafka_producer_configuration.get_bootstrap_servers(), acks="all", **kwargs
+            bootstrap_servers=kafka_producer_configuration.get_bootstrap_servers(),
+            api_version=(0, 10, 1),
+            acks="all",
+            **kwargs
         )
         self._topic = topic
         self._flush_timeout = kafka_producer_configuration.get_flush_timeout()

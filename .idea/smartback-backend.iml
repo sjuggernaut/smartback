@@ -6,5 +6,6 @@
     </content>
     <orderEntry type="jdk" jdkName="Remote Python 3.8.0 Docker Compose (web at [/Users/sharanchitta/PycharmProjects/smartback-backend/docker-compose.yml])" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="sensors-producers" />
   </component>
 </module>

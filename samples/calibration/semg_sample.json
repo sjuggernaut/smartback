@@ -1,0 +1,14 @@
+/**
+This is a sample message sent from SEMG Sensor to DE.
+**/
+{
+  "device_id": "",
+  "data_type": "calibration",
+  "data": {
+    "calibration_id": "",
+    "right_multifidus": "",
+    "left_multifidus": "",
+    "rightc4_paraspinal": "",
+    "leftc4_paraspinal": ""
+  }
+}

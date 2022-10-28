@@ -15,9 +15,14 @@ python3 manage.py migrate
 echo "Creating superuser"
 python3 manage.py create_super_user
 
+echo "Launching Sensor Consumers"
+python3 manage.py launch_providers local
+
 # Start server
 echo "Starting server"
 python3 manage.py runserver 0.0.0.0:8001
+
+
 
 
 

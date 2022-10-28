@@ -26,6 +26,9 @@ class AlertConfiguration(metaclass=ABCMeta):
     def get_kafka_consumer_configuration(self):
         return _KafkaConsumerConfiguration(self._environment)
 
+    def get_kafka_producer_configuration(self):
+        return _KafkaProducerConfiguration(self._environment)
+
 
 class _ProductionAlertConfiguration(AlertConfiguration):
     def __init__(self):
@@ -53,6 +56,9 @@ class _LocalAlertConfiguration(AlertConfiguration):
 
     def get_kafka_semg_sensor_topic(self):
         return "semgsensor-alerts-local"
+
+    def get_kafka_ipc_topic(self):
+        return "ipc-alerts-local"
 
 
 def _validated_get_from_env(environment_variable):

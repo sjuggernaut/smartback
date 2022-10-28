@@ -1,6 +1,25 @@
 from django.db import models
 import uuid
 from django.contrib.auth import get_user_model
+from infra.assemblers.device_types import DeviceTypes
+
+DEVICE_TYPE_CHOICES = (
+    ("device_semg", "SEMG"),
+    ("device_inertial", "INERTIAL"),
+    ("device_ir", "IR"),
+)
+
+
+class Devices(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    type = models.CharField(choices=DEVICE_TYPE_CHOICES, default=None, max_length=256)
+
+    class Meta:
+        unique_together = (('user', 'type'),)
+
+    def __str__(self):
+        return f"[{self.user.username}] <=> [{self.type}]"
 
 
 class PersonalCharacteristics(models.Model):

@@ -59,7 +59,7 @@ class Consumer(threading.Thread):
         try:
             consumer = KafkaConsumer(
                 bootstrap_servers="kafka:29092",
-                auto_offset_reset="earliest",
+                auto_offset_reset="latest", # earliest to get all the messages in the queue
                 api_version=(0, 10, 1),
                 # group_id=self._group_id,
                 group_id=None,
@@ -69,21 +69,25 @@ class Consumer(threading.Thread):
             )
 
             consumer.subscribe([self._topic])
+            logger.info(f"Subscribing to topic: [{self._topic}] at {self._boostrap_servers}")
             print(f"Subscribing to topic: [{self._topic}] at {self._boostrap_servers}")
 
             while not self._stop_event.is_set():
                 for message in consumer:
                     try:
-                        print(f"Consuming {message.topic}-{message.partition}-{message.offset}")
+                        logger.info(f"Consuming {message.topic}-{message.partition}-{message.offset}")
+
+                        """
+                         if the topic is one of the sensor-alerts: store the message data to data.models - based on process stage: calibration/treatment
+                         get the device_id and store to the models.
+                        """
                         # self._callback_function(message)
                     except Exception as exception:
-                        print("Exception while consuming")
                         logger.exception(f"The kafka event could not be consumed {exception}")
                     if self._stop_event.is_set():
-                        print("Stopping")
                         break
 
             logger.info(f"Stop event received for consumer of topic [{self._topic}]. Consumption will be stopped")
             consumer.close()
         except Exception as e:
-            print(f"Exception {e}")
+            logger.exception(f"Exception {e}")
