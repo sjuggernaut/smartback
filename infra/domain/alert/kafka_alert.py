@@ -14,7 +14,8 @@ class KafkaAlertApi:
     def accept_record(self, kafka_consumer_record: ConsumerRecord):
         try:
             logger.info(f"Processing ConsumerRecord from offset: [{kafka_consumer_record.offset}]")
-            alert = self._alert_assembler.assemble(kafka_consumer_record)
+            logger.info(self._alert_assembler)
+            # alert = self._alert_assembler.assemble(kafka_consumer_record)
         except Exception as exception:
             logger.exception(f"The kafka event could not be assembled {exception}")
 

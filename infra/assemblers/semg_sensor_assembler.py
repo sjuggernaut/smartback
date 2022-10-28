@@ -1,8 +1,10 @@
-import json
+import logging
 
 from infra.assemblers.kafka_assembler import KafkaAssembler
 from infra.domain.alert.alert import Alert
 from kafka.consumer.fetcher import ConsumerRecord
+
+logger = logging.getLogger(__name__)
 
 
 class KafkaSEMGSensorAssembler(KafkaAssembler):
@@ -12,4 +14,6 @@ class KafkaSEMGSensorAssembler(KafkaAssembler):
     """
 
     def assemble(self, kafka_message: ConsumerRecord, meta) -> Alert:
-        pass
+        original = kafka_message.value.decode("utf-8")
+        logger.info(
+            f"SEMG Sensor Assembler: Message received from [{kafka_message.offset}] on topic [{kafka_message.topic}] at [{kafka_message.timestamp}]")

@@ -17,4 +17,4 @@ class KafkaIRSensorAssembler(KafkaAssembler):
     def assemble(self, kafka_message: ConsumerRecord, meta) -> Alert:
         original = kafka_message.value.decode("utf-8")
         logger.info(
-            f"Received message from [{kafka_message.offset}] on topic [{kafka_message.topic}] at [{kafka_message.timestamp}]")
+            f"IR Sensor Assembler: Message received from [{kafka_message.offset}] on topic [{kafka_message.topic}] at [{kafka_message.timestamp}]")

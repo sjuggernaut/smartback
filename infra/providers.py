@@ -19,14 +19,14 @@ def launch_providers(environment):
     :return:
     """
     configuration = get_config(environment)
-    # ir_sensor_consumer_thread = _create_ir_sensor_consumer_thread(configuration)
+    ir_sensor_consumer_thread = _create_ir_sensor_consumer_thread(configuration)
     semg_sensor_consumer_thread = _create_semg_sensor_consumer_thread(configuration)
-    # inertial_sensor_consumer_thread = _create_inertial_sensor_consumer_thread(configuration)
+    inertial_sensor_consumer_thread = _create_inertial_sensor_consumer_thread(configuration)
 
     logger.info("Starting Consumer threads...")
-    # ir_sensor_consumer_thread.start()
+    ir_sensor_consumer_thread.start()
     semg_sensor_consumer_thread.start()
-    # inertial_sensor_consumer_thread.start()
+    inertial_sensor_consumer_thread.start()
 
 
 def _create_ir_sensor_consumer_thread(configuration):
