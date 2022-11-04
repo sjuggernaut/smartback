@@ -2,8 +2,9 @@ version: '3.3'
 
 services:
   web:
+    restart: always
     build: .
-    command: python3 manage.py runserver 0.0.0.0:8001
+    command: ["start"]
     volumes:
       - .:/app/
     ports:
@@ -12,6 +13,28 @@ services:
       - ./.env.dev
     depends_on:
       - db
+      - zookeeper
+      - kafka
+    links:
+      - db:db
+      - redis:redis
+    networks:
+      - backend
+
+  kafka-web:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["kafka-web"]
+    volumes:
+      - .:/app/
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - web
+      - db
+      - zookeeper
       - kafka
     links:
       - db:db

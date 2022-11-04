@@ -2,12 +2,12 @@ import logging
 
 from abc import ABC, abstractmethod
 
-from infra.domain.alert.alert import Alert
 from kafka.consumer.fetcher import ConsumerRecord
-
+from infra.domain.command_process import CommandProcess
 from rest_framework.request import Request
-from users.models import Devices
-from infra.assemblers.commands import Commands
+from infra.models import Devices
+from infra.domain.commands import Commands
+from infra.domain.alert.alert import Alert
 from infra.domain.alert.calibration_alert import CalibrationAlert
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ _COMMAND_FROM_BACKEND = "from_backend"
 
 class CommandAssembler(ABC):
     @abstractmethod
-    def assemble(self, request: Request, device: Devices, command: Commands) -> Alert:
+    def assemble(self, kafka_message: ConsumerRecord) -> CommandProcess:
         pass
 
 

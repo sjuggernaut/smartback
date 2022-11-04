@@ -10,9 +10,9 @@ from rest_framework import status
 
 from calibration.serializers import *
 from infra.producer import Producer
-from infra.assemblers.commands import Commands
+from infra.domain.commands import Commands
 from infra.assemblers.device_types import DeviceTypes
-from infra.assemblers.command_assembler import CalibrationCommandAssembler
+from infra.assemblers.command_assemblers.command_assembler import CalibrationCommandAssembler
 from infra.service.kafka_service import KafkaService
 from smartback.configuration import get_config
 

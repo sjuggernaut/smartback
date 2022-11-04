@@ -5,5 +5,5 @@ from infra.domain.alert.alert import Alert
 
 class KafkaAssembler(ABC):
     @abstractmethod
-    def assemble(self, kafka_message: ConsumerRecord, meta) -> Alert:
+    def assemble(self, kafka_message: ConsumerRecord) -> Alert:
         pass

@@ -4,6 +4,8 @@ import logging
 from infra.assemblers.kafka_assembler import KafkaAssembler
 from infra.domain.alert.alert import Alert
 from kafka.consumer.fetcher import ConsumerRecord
+from infra.serializers import IRSensorDataSerializer
+from infra.exceptions.filter_out import FilterOutException
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +16,17 @@ class KafkaIRSensorAssembler(KafkaAssembler):
     :return Alert
     """
 
-    def assemble(self, kafka_message: ConsumerRecord, meta) -> Alert:
-        original = kafka_message.value.decode("utf-8")
+    def assemble(self, kafka_message: ConsumerRecord) -> Alert:
         logger.info(
-            f"IR Sensor Assembler: Message received from [{kafka_message.offset}] on topic [{kafka_message.topic}] at [{kafka_message.timestamp}]")
+            f"IRSensor Assembler: Message received from [{kafka_message.offset}] on topic [{kafka_message.topic}] at [{kafka_message.timestamp}]")
+
+        try:
+            original = kafka_message.value.decode("utf-8")
+            event = json.loads(original)
+            data = event.get("data")
+            serializer = IRSensorDataSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            logger.info(f"IRSensor Assembler: [{event.get('type')}] message has been saved. ")
+        except Exception as e:
+            raise FilterOutException(__name__, e)

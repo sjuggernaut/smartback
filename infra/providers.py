@@ -4,6 +4,7 @@ from infra.domain.alert.kafka_alert import KafkaAlertApi
 from infra.assemblers.semg_sensor_assembler import KafkaSEMGSensorAssembler
 from infra.assemblers.ir_sensor_assembler import KafkaIRSensorAssembler
 from infra.assemblers.inertial_sensor_assembler import KafkaInertialSensorAssembler
+from infra.assemblers.ipc_assembler import IPCCommandAssembler
 from infra.consumer import Consumer
 from smartback.configuration import get_config
 from infra.assemblers.error_handler import LoggingKafkaErrorHandler
@@ -22,16 +23,18 @@ def launch_providers(environment):
     ir_sensor_consumer_thread = _create_ir_sensor_consumer_thread(configuration)
     semg_sensor_consumer_thread = _create_semg_sensor_consumer_thread(configuration)
     inertial_sensor_consumer_thread = _create_inertial_sensor_consumer_thread(configuration)
+    ipc_commands_consumer_thread = _create_ipc_commands_consumer_thread(configuration)
 
     logger.info("Starting Consumer threads...")
     ir_sensor_consumer_thread.start()
     semg_sensor_consumer_thread.start()
     inertial_sensor_consumer_thread.start()
+    ipc_commands_consumer_thread.start()
 
 
 def _create_ir_sensor_consumer_thread(configuration):
     sensor_alert_api = KafkaAlertApi(
-        KafkaIRSensorAssembler
+        KafkaIRSensorAssembler()
     )
     return Consumer(
         configuration.get_kafka_consumer_configuration(),
@@ -43,7 +46,7 @@ def _create_ir_sensor_consumer_thread(configuration):
 
 def _create_semg_sensor_consumer_thread(configuration):
     sensor_alert_api = KafkaAlertApi(
-        KafkaSEMGSensorAssembler
+        KafkaSEMGSensorAssembler()
     )
     return Consumer(
         configuration.get_kafka_consumer_configuration(),
@@ -55,11 +58,22 @@ def _create_semg_sensor_consumer_thread(configuration):
 
 def _create_inertial_sensor_consumer_thread(configuration):
     sensor_alert_api = KafkaAlertApi(
-        KafkaInertialSensorAssembler
+        KafkaInertialSensorAssembler()
     )
     return Consumer(
         configuration.get_kafka_consumer_configuration(),
         configuration.get_kafka_inertial_sensor_topic(),
         LoggingKafkaErrorHandler(),
         callback_function=sensor_alert_api.accept_record
+    )
+
+def _create_ipc_commands_consumer_thread(configuration):
+    ipc_alert_api = KafkaAlertApi(
+        IPCCommandAssembler()
+    )
+    return Consumer(
+        configuration.get_kafka_consumer_configuration(),
+        configuration.get_kafka_ipc_topic(),
+        LoggingKafkaErrorHandler(),
+        callback_function=ipc_alert_api.accept_record
     )

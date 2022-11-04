@@ -1,0 +1,7 @@
+/**
+This is a sample message sent from SEMG Sensor to DE.
+**/
+{"type": "calibration", "data": {"session": "978df625-0734-49e3-a84b-b684844a6907", "device": "5a5acbde-3610-4ef0-882f-7c92db101d0f", "l5s1_lateral": "1.4","l5s1_axial": "1.4","l5s1_flexion": "2.4","l4l3_lateral": "1.4","l4l3_axial": "1.4","l4l3_flexion": "2.4","l1t12_lateral": "1.4", "l1t12_axial": "1.4","l1t12_flexion": "2.4","t9t8_lateral": "1.4","t9t8_axial": "1.4","t9t8_flexion": "2.4","t1c7_lateral": "1.4","t1c7_axial": "1.4", "t1c7_flexion": "2.4","c1head_lateral": "1.4","c1head_axial": "1.4","c1head_flexion": "2.4"}}
+
+
+

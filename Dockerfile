@@ -45,4 +45,5 @@ COPY start-kafka.sh .
 ADD . /app/
 
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+
