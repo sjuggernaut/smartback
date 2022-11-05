@@ -19,6 +19,6 @@ class TreatmentOneMindSendAssembler(KafkaAssembler):
             session_id = command_data.get("session")
             session = Session.objects.get(id=session_id)
 
-            
+
         except Exception as e:
             raise FilterOutException(__name__, e)

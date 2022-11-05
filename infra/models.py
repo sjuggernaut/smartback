@@ -111,3 +111,18 @@ class CalibrationStep(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['session', 'step'], name='Single-Calibration-with-a-step-constraint')
         ]
+
+class SessionTreatmentIPCReceived(models.Model):
+    """
+    This model records the time and status of the DE receiving one mind end commands for treatment session from sensors
+    Identify the multiple records per session by the processing_status
+    """
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, default=None)
+    semg_received = models.BooleanField()
+    semg_received_time = models.DateTimeField(auto_now_add=True)
+    inertial_received = models.BooleanField()
+    inertial_received_time = models.DateTimeField(auto_now_add=True)
+    ir_received = models.BooleanField()
+    ir_received_time = models.DateTimeField(auto_now_add=True)
+    processing_status = models.BooleanField(default=False)

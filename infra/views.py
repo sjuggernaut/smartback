@@ -48,6 +48,14 @@ class SessionCreateView(generics.CreateAPIView):
         except IntegrityError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+    def _create_process(self, request):
+        """
+        Create a new process with the session ID.
+        :param request:
+        :return:
+        """
+
+
 
 class CalibrationStepCreateView(generics.CreateAPIView):
     """
