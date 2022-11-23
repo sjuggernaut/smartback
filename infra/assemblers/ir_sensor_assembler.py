@@ -4,8 +4,9 @@ import logging
 from infra.assemblers.kafka_assembler import KafkaAssembler
 from infra.domain.alert.alert import Alert
 from kafka.consumer.fetcher import ConsumerRecord
-from infra.serializers import IRSensorDataSerializer
+from infra.serializers import IRSensorDataSerializer, CalibrationStepIRDataSerializer
 from infra.exceptions.filter_out import FilterOutException
+from infra.domain.session_type import SessionType
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,13 @@ class KafkaIRSensorAssembler(KafkaAssembler):
             original = kafka_message.value.decode("utf-8")
             event = json.loads(original)
             data = event.get("data")
-            serializer = IRSensorDataSerializer(data=data)
+            event_type = event.get("type", None)
+
+            if event_type and event_type == SessionType.calibration:
+                serializer = CalibrationStepIRDataSerializer(data=data)
+            else:
+                serializer = IRSensorDataSerializer(data=data)
+
             serializer.is_valid(raise_exception=True)
             serializer.save()
             logger.info(f"IRSensor Assembler: [{event.get('type')}] message has been saved. ")

@@ -37,7 +37,8 @@ class PersonalCharacteristics(models.Model):
 
     @property
     def get_bmi(self):
-        return self.weight / (self.height_to_meters() * 2)
+        height_mts = self.height_to_meters()
+        return self.weight / (height_mts * height_mts)
 
     class Meta:
         verbose_name = "Personal Characteristics"

@@ -29,6 +29,7 @@ class IRSensorData(models.Model):
     )
     device = models.ForeignKey(Devices, on_delete=models.PROTECT)
     thermal = models.FloatField(null=True, blank=True)
+    read_status = models.BooleanField(default=False)
 
 
 class InertialSensorData(models.Model):
@@ -64,6 +65,8 @@ class InertialSensorData(models.Model):
     c1head_axial = models.FloatField(null=True, blank=True)
     c1head_flexion = models.FloatField(null=True, blank=True)
 
+    read_status = models.BooleanField(default=False)
+
 
 class SEMGSensorData(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
@@ -77,6 +80,8 @@ class SEMGSensorData(models.Model):
     leftc4_paraspinal = models.FloatField(null=True, blank=True)
     right_multifidus = models.FloatField(null=True, blank=True)
     left_multifidus = models.FloatField(null=True, blank=True)
+
+    read_status = models.BooleanField(default=False)
 
 
 class Procedure(models.Model):
@@ -106,11 +111,13 @@ class CalibrationStep(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, default=None)
     step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
     started_at = models.DateTimeField(auto_now_add=True)
+    read_status = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['session', 'step'], name='Single-Calibration-with-a-step-constraint')
         ]
+
 
 class SessionTreatmentIPCReceived(models.Model):
     """
@@ -126,3 +133,103 @@ class SessionTreatmentIPCReceived(models.Model):
     ir_received = models.BooleanField()
     ir_received_time = models.DateTimeField(auto_now_add=True)
     processing_status = models.BooleanField(default=False)
+
+
+class CalibrationStepSEMGData(SEMGSensorData):
+    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
+
+
+class CalibrationStepInertialData(InertialSensorData):
+    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
+
+
+class CalibrationStepIRData(IRSensorData):
+    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
+
+
+class ProcedureGoldStandardInertialData(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
+    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
+    is_final_data = models.BooleanField(default=False)
+
+    l5s1_lateral = models.FloatField(null=True, blank=True)
+    l5s1_axial = models.FloatField(null=True, blank=True)
+    l5s1_flexion = models.FloatField(null=True, blank=True)
+
+    l4l3_lateral = models.FloatField(null=True, blank=True)
+    l4l3_axial = models.FloatField(null=True, blank=True)
+    l4l3_flexion = models.FloatField(null=True, blank=True)
+
+    l1t12_lateral = models.FloatField(null=True, blank=True)
+    l1t12_axial = models.FloatField(null=True, blank=True)
+    l1t12_flexion = models.FloatField(null=True, blank=True)
+
+    t9t8_lateral = models.FloatField(null=True, blank=True)
+    t9t8_axial = models.FloatField(null=True, blank=True)
+    t9t8_flexion = models.FloatField(null=True, blank=True)
+
+    t1c7_lateral = models.FloatField(null=True, blank=True)
+    t1c7_axial = models.FloatField(null=True, blank=True)
+    t1c7_flexion = models.FloatField(null=True, blank=True)
+
+    c1head_lateral = models.FloatField(null=True, blank=True)
+    c1head_axial = models.FloatField(null=True, blank=True)
+    c1head_flexion = models.FloatField(null=True, blank=True)
+
+
+class ProcedureGoldStandardSEMGData(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
+    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
+    is_final_data = models.BooleanField(default=False)
+
+    rightc4_paraspinal = models.FloatField(null=True, blank=True)
+    leftc4_paraspinal = models.FloatField(null=True, blank=True)
+    right_multifidus = models.FloatField(null=True, blank=True)
+    left_multifidus = models.FloatField(null=True, blank=True)
+
+
+class UserGoldStandardInertialData(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
+    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    is_final_data = models.BooleanField(default=False)
+
+    l5s1_lateral = models.FloatField(null=True, blank=True)
+    l5s1_axial = models.FloatField(null=True, blank=True)
+    l5s1_flexion = models.FloatField(null=True, blank=True)
+
+    l4l3_lateral = models.FloatField(null=True, blank=True)
+    l4l3_axial = models.FloatField(null=True, blank=True)
+    l4l3_flexion = models.FloatField(null=True, blank=True)
+
+    l1t12_lateral = models.FloatField(null=True, blank=True)
+    l1t12_axial = models.FloatField(null=True, blank=True)
+    l1t12_flexion = models.FloatField(null=True, blank=True)
+
+    t9t8_lateral = models.FloatField(null=True, blank=True)
+    t9t8_axial = models.FloatField(null=True, blank=True)
+    t9t8_flexion = models.FloatField(null=True, blank=True)
+
+    t1c7_lateral = models.FloatField(null=True, blank=True)
+    t1c7_axial = models.FloatField(null=True, blank=True)
+    t1c7_flexion = models.FloatField(null=True, blank=True)
+
+    c1head_lateral = models.FloatField(null=True, blank=True)
+    c1head_axial = models.FloatField(null=True, blank=True)
+    c1head_flexion = models.FloatField(null=True, blank=True)
+
+
+class UserGoldStandardSEMGData(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
+    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    is_final_data = models.BooleanField(default=False)
+
+    rightc4_paraspinal = models.FloatField(null=True, blank=True)
+    leftc4_paraspinal = models.FloatField(null=True, blank=True)
+    right_multifidus = models.FloatField(null=True, blank=True)
+    left_multifidus = models.FloatField(null=True, blank=True)
