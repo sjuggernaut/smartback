@@ -65,6 +65,10 @@ class InertialSensorData(models.Model):
     c1head_axial = models.FloatField(null=True, blank=True)
     c1head_flexion = models.FloatField(null=True, blank=True)
 
+    com_posx = models.FloatField(null=True, blank=True)
+    com_posy = models.FloatField(null=True, blank=True)
+    com_posz = models.FloatField(null=True, blank=True)
+
     read_status = models.BooleanField(default=False)
 
 
@@ -176,6 +180,10 @@ class ProcedureGoldStandardInertialData(models.Model):
     c1head_lateral = models.FloatField(null=True, blank=True)
     c1head_axial = models.FloatField(null=True, blank=True)
     c1head_flexion = models.FloatField(null=True, blank=True)
+
+    com_posx = models.FloatField(null=True, blank=True)
+    com_posy = models.FloatField(null=True, blank=True)
+    com_posz = models.FloatField(null=True, blank=True)
 
 
 class ProcedureGoldStandardSEMGData(models.Model):

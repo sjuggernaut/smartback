@@ -40,7 +40,7 @@ class CalibrationEndAssembler(KafkaAssembler):
             # TODO:
             # DONE:  In this assembler - fetch data from CalibrationStepSEMGData, CalibrationStepInertialData, CalibrationStepIRData per session
             # YET TO Review the process, but get the Gold standard from ProcedureGoldStandardSEMGData, ProcedureGoldStandardInertialData
-            # compute gold standard by BMI on the procedure gold standard
+            # compute gold standard by BMI on the procedure gold standard, get calibration factor value and,
             # and store the gold standard for the user to UserGoldStandardSEMGData, UserGoldStandardInertialData
             # use this gold standard value during treatment one minute end process
             # pseudo method calls:-
