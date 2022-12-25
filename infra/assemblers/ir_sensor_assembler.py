@@ -6,7 +6,7 @@ from infra.domain.alert.alert import Alert
 from kafka.consumer.fetcher import ConsumerRecord
 from infra.serializers import IRSensorDataSerializer, CalibrationStepIRDataSerializer
 from infra.exceptions.filter_out import FilterOutException
-from infra.domain.session_type import SessionType
+from infra.models import SessionTypes
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class KafkaIRSensorAssembler(KafkaAssembler):
             data = event.get("data")
             event_type = event.get("type", None)
 
-            if event_type and event_type == SessionType.calibration:
+            if event_type and event_type == SessionTypes.CALIBRATION:
                 serializer = CalibrationStepIRDataSerializer(data=data)
             else:
                 serializer = IRSensorDataSerializer(data=data)

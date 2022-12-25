@@ -7,6 +7,8 @@ INERTIAL_DATA_FIELDS = (
 
 SEMG_DATA_FIELDS = ('rightc4_paraspinal', 'leftc4_paraspinal', 'right_multifidus', 'left_multifidus')
 
+THERMAL_INPUT_THRESHOLD = 42.0
+
 
 def get_mean(data: list):
     """
@@ -17,10 +19,27 @@ def get_mean(data: list):
 
 
 def compare_with_gold_standard(data_to_compare: list, gold_standard: list):
-    np_data_to_compare = np.array(data_to_compare) # patient data
-    np_gold_standard = np.array(gold_standard) # gold standard
+    np_data_to_compare = np.array(data_to_compare)  # patient data
+    np_gold_standard = np.array(gold_standard)  # gold standard
 
     result = np_gold_standard - np_data_to_compare
     if np.count_nonzero(result) < 1:
         return False
     return True
+
+
+def is_temp_higher(input_temp: float) -> bool:
+    return input_temp > THERMAL_INPUT_THRESHOLD
+
+
+def multiply_list_with(number, list_to_multiply) -> list:
+    return list(np.array(list(list_to_multiply)) * float(number))
+
+
+def subtract_then_average(list1, list2) -> float:
+    difference = np.array(list1) - np.array(list2)
+    return np.average(difference)
+
+
+def average(values) -> float:
+    return np.average(np.array(values))

@@ -76,7 +76,7 @@ class TreatmentOneMinuteSend:
 
             # compare the 3 mean values with their respective gold standard
             # the gold standard value is fromm the Users gold standard model (computed after the calibration stage)
-            # compute the IR energy stimulation
+            # compute the IR energy stimulation and produce the value to Raspberry PI - IR LED. topic: ir-led-alerts
 
 
 

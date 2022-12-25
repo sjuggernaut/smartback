@@ -2,8 +2,8 @@ from enum import Enum
 
 
 class SessionType(Enum):
-    calibration = {"name": "calibration"}
-    treatment = {"name": "treatment"}
+    CALIBRATION = {"name": "CALIBRATION"}
+    TREATMENT = {"name": "TREATMENT"}
 
     def __init__(self, value):
         if "name" not in value:

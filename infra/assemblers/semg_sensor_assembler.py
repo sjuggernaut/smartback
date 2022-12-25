@@ -6,7 +6,7 @@ from infra.assemblers.kafka_assembler import KafkaAssembler
 from infra.domain.alert.alert import Alert
 from infra.serializers import SEMGSensorDataSerializer, CalibrationStepSEMGDataSerializer
 from infra.exceptions.filter_out import FilterOutException
-from infra.domain.session_type import SessionType
+from infra.models import SessionTypes
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class KafkaSEMGSensorAssembler(KafkaAssembler):
             data = event.get("data")
             event_type = event.get("type", None)
 
-            if event_type and event_type == SessionType.calibration:
+            if event_type and event_type == SessionTypes.CALIBRATION:
                 serializer = CalibrationStepSEMGDataSerializer(data=data)
             else:
                 serializer = SEMGSensorDataSerializer(data=data)

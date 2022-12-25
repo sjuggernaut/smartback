@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["start"]
+    command: start
     volumes:
       - .:/app/
     ports:
@@ -15,34 +15,32 @@ services:
       - ./.env.dev
     depends_on:
       - db
-      - zookeeper
-      - kafka
     links:
       - db:db
       - redis:redis
     networks:
       - backend
 
-  kafka-web:
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: ["kafka-web"]
-    volumes:
-      - .:/app/
-    env_file:
-      - ./.env.dev
-    depends_on:
-      - web
-      - db
-      - zookeeper
-      - kafka
-    links:
-      - db:db
-      - redis:redis
-    networks:
-      - backend
+#  kafka-web:
+#    restart: always
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    command: ["kafka-web"]
+#    volumes:
+#      - .:/app/
+#    env_file:
+#      - ./.env.dev
+#    depends_on:
+#      - web
+#      - db
+#      - zookeeper
+#      - kafka
+#    links:
+#      - db:db
+#      - redis:redis
+#    networks:
+#      - backend
 
   redis:
     image: redis:latest
@@ -77,7 +75,6 @@ services:
     hostname: zookeeper
     networks:
       - backend
-
 
   kafka:
     image: wurstmeister/kafka:latest

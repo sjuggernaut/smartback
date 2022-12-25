@@ -44,6 +44,6 @@ COPY start-kafka.sh .
 # copy project
 ADD . /app/
 
-
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
+CMD ["start"]

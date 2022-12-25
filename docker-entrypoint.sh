@@ -19,10 +19,12 @@ case "$1" in
 
       echo "Starting server"
       python3 manage.py runserver 0.0.0.0:8001
+
+      exec "$@"
   ;;
   kafka-web)
       echo "Launching Sensor Consumers"
-      python3 manage.py launch_providers local
+#      python3 manage.py launch_providers local
   ;;
   python)
     python3
