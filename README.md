@@ -1,6 +1,12 @@
 # SmartBack
 
+3 docker compose files on one external docker network:
 
+Network shared-network-smartback declared as external, but could not be found. Please create the network manually using `docker network create shared-network-smartback` and try again
+
+## Bash Terminal 
+
+- docker exec -it smartback-backend_kafka-backend_1 /bin/bash
 
 ## Kafka Commands
 
@@ -38,3 +44,14 @@ _Use the PlainText Host value in the Advanced tab for the Bootstrap Servers fiel
 
 
 Consumption started after network is added for services: kafka and zookeeper like backend.
+
+
+### Commands to connect to AWS ECS (Load Balancer)
+
+- #### Producer 
+
+  `$KAFKA_HOME/bin/kafka-console-producer.sh --broker-list testi-LoadB-1NA0S1LVEP912-c8fbf571cb11a636.elb.us-east-1.amazonaws.com:29092 --topic semgsensor-alerts-local`
+
+- #### Consumer
+
+  `$KAFKA_HOME/bin/kafka-console-consumer.sh --bootstrap-server testi-LoadB-1NA0S1LVEP912-c8fbf571cb11a636.elb.us-east-1.amazonaws.com:29092 --topic semgsensor-alerts-local --from-beginning`

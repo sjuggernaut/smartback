@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../sensors-producers/.idea/sensors-producers.iml" filepath="$PROJECT_DIR$/../sensors-producers/.idea/sensors-producers.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/smartback-backend.iml" filepath="$PROJECT_DIR$/.idea/smartback-backend.iml" />
     </modules>
   </component>

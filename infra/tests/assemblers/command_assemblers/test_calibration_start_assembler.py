@@ -1,3 +1,8 @@
+# Needed for tests
+import django
+
+django.setup()
+
 from django.test import TestCase
 from unittest.mock import patch, Mock
 
@@ -15,6 +20,11 @@ class CalibrationStartAssemblerTest(TestCase):
             "user": "1",
             "command": "calibration_start",
             "type": "ipc_command",
+            "devices": {
+                "semg": "1",
+                "inertial": "2",
+                "ir": "3"
+            }
         }
 
     @patch('infra.assemblers.command_assemblers.calibration_start_assembler.CalibrationStartAssembler._create_session')

@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 environment = os.getenv("ENVIRONMENT")
 configuration = get_config(environment)
 
-ipc_kafka_service = KafkaService(producer=Producer(configuration.get_kafka_producer_configuration(),
-                                                   configuration.get_kafka_ipc_topic()))
+# ipc_kafka_service = KafkaService(producer=Producer(configuration.get_kafka_producer_configuration(),
+#                                                    configuration.get_kafka_ipc_topic()))
 command_assembler = CalibrationCommandAssembler()
 
 

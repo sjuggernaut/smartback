@@ -5,7 +5,7 @@ from infra.assemblers.command_assemblers.calibration_step_start_assembler import
 from infra.assemblers.command_assemblers.calibration_end_assembler import CalibrationEndAssembler
 from infra.assemblers.command_assemblers.calibration_start_assembler import CalibrationStartAssembler
 from infra.assemblers.command_assemblers.treatment_start_assembler import TreatmentStartAssembler
-from infra.assemblers.command_assemblers.treatment_one_mind_send_assembler import TreatmentOneMindSendAssembler
+from infra.assemblers.command_assemblers.treatment_one_min_send_assembler import TreatmentOneMinSendAssembler
 from smartback.configuration import get_config
 
 environment = os.getenv("ENVIRONMENT")
@@ -17,8 +17,9 @@ class Commands(Enum):
     calibration_step_start = {"name": "calibration_step_start", "assembler": CalibrationStepStartAssembler()}
     calibration_end = {"name": "calibration_end", "assembler": CalibrationEndAssembler()}
     calibration_start = {"name": "calibration_start", "assembler": CalibrationStartAssembler()}
+
     treatment_start = {"name": "treatment_start", "assembler": TreatmentStartAssembler()}
-    treatment_one_min_send = {"name": "treatment_one_min_send", "assembler": TreatmentOneMindSendAssembler()}
+    treatment_one_min_send = {"name": "treatment_one_min_send", "assembler": TreatmentOneMinSendAssembler()}
 
     def __init__(self, value):
         if "name" not in value:

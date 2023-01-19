@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 environment = os.getenv("ENVIRONMENT")
 configuration = get_config(environment)
 
-ipc_kafka_service = KafkaService(producer=Producer(configuration.get_kafka_producer_configuration(),
-                                                   configuration.get_kafka_ipc_topic()))
+# ipc_kafka_service = KafkaService(producer=Producer(configuration.get_kafka_producer_configuration(),
+#                                                    configuration.get_kafka_ipc_topic()))
 command_assembler = CalibrationCommandAssembler()
 
 
@@ -38,15 +38,16 @@ class CalibrationSessionCreateView(generics.CreateAPIView):
     pagination_class = None
 
     def create(self, request, *args, **kwargs):
-        try:
-            request.data["user"] = request.user.id
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        except IntegrityError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        pass
+        # try:
+        #     request.data["user"] = request.user.id
+        #     serializer = self.get_serializer(data=request.data)
+        #     serializer.is_valid(raise_exception=True)
+        #     self.perform_create(serializer)
+        #     headers = self.get_success_headers(serializer.data)
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        # except IntegrityError:
+        #     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class CalibrationStepCreateView(generics.CreateAPIView):
@@ -61,44 +62,45 @@ class CalibrationStepCreateView(generics.CreateAPIView):
     pagination_class = None
 
     def create(self, request, *args, **kwargs):
-        try:
-            request.data["user"] = request.user.id
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            # self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
+        pass
+        # try:
+        #     request.data["user"] = request.user.id
+        #     serializer = self.get_serializer(data=request.data)
+        #     serializer.is_valid(raise_exception=True)
+        #     # self.perform_create(serializer)
+        #     headers = self.get_success_headers(serializer.data)
+        #
+        #     """
+        #     KAFKA produce to IPC topic to capture data for the step
+        #     Send Calibration ID, Device ID, Step ID,
+        #     If the Device ID matches with the consuming process's env var - DEVICE_ID - the sensor will start producing
+        #     to the topic.
+        #     the produced data includes Calibration ID, Device ID, Step ID
+        #     """
+        #     self._send_to_kafka(request)
+        #
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        # except IntegrityError as exception:
+        #     logger.exception(f"There is an error while adding a calibration step. [{exception}]")
+        #     return Response({"message": "Duplicate calibration step failed to add."},
+        #                     status=status.HTTP_400_BAD_REQUEST)
 
-            """
-            KAFKA produce to IPC topic to capture data for the step
-            Send Calibration ID, Device ID, Step ID,
-            If the Device ID matches with the consuming process's env var - DEVICE_ID - the sensor will start producing
-            to the topic. 
-            the produced data includes Calibration ID, Device ID, Step ID
-            """
-            self._send_to_kafka(request)
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        except IntegrityError as exception:
-            logger.exception(f"There is an error while adding a calibration step. [{exception}]")
-            return Response({"message": "Duplicate calibration step failed to add."},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-    def _send_to_kafka(self, request):
-        users_devices = Devices.objects.filter(user=request.user,
-                                               type__in=[
-                                                   DeviceTypes.device_semg,
-                                                   DeviceTypes.device_inertial,
-                                                   DeviceTypes.device_ir
-                                               ])
-        user_semg_device = users_devices.get(type=DeviceTypes.device_semg)
-        semg_alert = command_assembler.assemble(request, user_semg_device, Commands.calibration_step_start)
-
-        user_inertial_device = users_devices.get(type=DeviceTypes.device_inertial)
-        inertial_alert = command_assembler.assemble(request, user_inertial_device, Commands.calibration_step_start)
-
-        user_ir_device = users_devices.get(type=DeviceTypes.device_ir)
-        ir_alert = command_assembler.assemble(request, user_ir_device, Commands.calibration_step_start)
-
-        ipc_kafka_service.send(semg_alert)
-        ipc_kafka_service.send(inertial_alert)
-        ipc_kafka_service.send(ir_alert)
+    # def _send_to_kafka(self, request):
+    #     users_devices = Devices.objects.filter(user=request.user,
+    #                                            type__in=[
+    #                                                DeviceTypes.device_semg,
+    #                                                DeviceTypes.device_inertial,
+    #                                                DeviceTypes.device_ir
+    #                                            ])
+    #     user_semg_device = users_devices.get(type=DeviceTypes.device_semg)
+    #     semg_alert = command_assembler.assemble(request, user_semg_device, Commands.calibration_step_start)
+    #
+    #     user_inertial_device = users_devices.get(type=DeviceTypes.device_inertial)
+    #     inertial_alert = command_assembler.assemble(request, user_inertial_device, Commands.calibration_step_start)
+    #
+    #     user_ir_device = users_devices.get(type=DeviceTypes.device_ir)
+    #     ir_alert = command_assembler.assemble(request, user_ir_device, Commands.calibration_step_start)
+    #
+    #     ipc_kafka_service.send(semg_alert)
+    #     ipc_kafka_service.send(inertial_alert)
+    #     ipc_kafka_service.send(ir_alert)

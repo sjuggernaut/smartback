@@ -1,7 +1,6 @@
 from django.db import models
 import uuid
 from django.contrib.auth import get_user_model
-from infra.assemblers.device_types import DeviceTypes
 
 DEVICE_TYPE_CHOICES = (
     ("device_semg", "SEMG"),

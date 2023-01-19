@@ -1,0 +1,38 @@
+version: '3.3'
+
+services:
+  api:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: start
+    volumes:
+      - .:/app/
+    ports:
+      - 8001:8001
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+    links:
+      - db:db
+
+  db:
+    image: postgres:13.0-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=smartback
+      - POSTGRES_USER=smartback
+      - POSTGRES_PASSWORD=smartback
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+    external:
+      name: shared-network-smartback

@@ -127,17 +127,25 @@ class SessionTreatmentIPCReceived(models.Model):
     This model records the time and status of the engine receiving one min end commands for treatment session from sensors
     Identify the multiple records per session by the processing_status
 
+    This record for a session is created when a new treatment session record is created.
+
     Usage Phase: Treatment
     """
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     session = models.ForeignKey(Session, on_delete=models.CASCADE, default=None)
+    processing_status = models.BooleanField(default=False)  # Once the loop cycle finishes, set this to True
+
+    # SEMG Received data
     semg_received = models.BooleanField()
     semg_received_time = models.DateTimeField(auto_now_add=True)
+
+    # Inertial Received data
     inertial_received = models.BooleanField()
     inertial_received_time = models.DateTimeField(auto_now_add=True)
+
+    # IR Received data
     ir_received = models.BooleanField()
     ir_received_time = models.DateTimeField(auto_now_add=True)
-    processing_status = models.BooleanField(default=False)
 
 
 class CalibrationStepSEMGData(GenericSEMGSensorsData):
@@ -194,26 +202,22 @@ class ProcedureGoldStandardSEMGData(GenericSEMGSensorsData):
 
 class UserGoldStandardInertialData(GenericInertialSensorsData):
     """
-    Model class for User's gold standard data - used during Treatment phase for the user. The values are derived at the end of calibration phase.
+    Model class for User's gold standard data - used during Treatment phase for the user. The values are created and stored to this model at the end of calibration phase.
 
     Usage Phase: Treatment
     """
     data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
-    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     is_final_data = models.BooleanField(default=False)
 
 
 class UserGoldStandardSEMGData(GenericSEMGSensorsData):
     """
-    Model class for User's gold standard data - used during Treatment phase for the user. The values are derived at the end of calibration phase.
+    Model class for User's gold standard data - used during Treatment phase for the user. The values are created and stored to this model at the end of calibration phase.
 
     Usage Phase: Treatment
     """
     data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
-    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     is_final_data = models.BooleanField(default=False)
 
@@ -225,6 +229,7 @@ class TreatmentGoldStandardInertialData(GenericInertialSensorsData):
     Usage Phase: Treatment
     """
     data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    is_final_data = models.BooleanField(default=False)
 
 
 class TreatmentGoldStandardSEMGData(GenericSEMGSensorsData):
@@ -234,3 +239,4 @@ class TreatmentGoldStandardSEMGData(GenericSEMGSensorsData):
     Usage Phase: Treatment
     """
     data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    is_final_data = models.BooleanField(default=False)

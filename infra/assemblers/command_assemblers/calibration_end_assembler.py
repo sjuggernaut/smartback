@@ -34,15 +34,16 @@ class CalibrationEndAssembler(KafkaAssembler):
 
             # self._calculate_user_gold_standard(session)
 
+
             # Send calibration stop command to user's sensors to stop the data sending process
             return Alert(command=SensorCommands.set_calibration_stop, devices=command_data.get("devices"))
         except Exception as e:
             raise FilterOutException(__name__, e)
 
     def _get_session_sensor_data(self, session):
-        calibration_semg_data = CalibrationStepSEMGData.objects.get(session=session, read_status=False)
-        calibration_inertial_data = CalibrationStepInertialData.objects.get(session=session, read_status=False)
-        calibration_ir_data = CalibrationStepIRData.objects.get(session=session, read_status=False)
+        calibration_semg_data = CalibrationStepSEMGData.objects.filter(session=session, read_status=False)
+        calibration_inertial_data = CalibrationStepInertialData.objects.filter(session=session, read_status=False)
+        calibration_ir_data = CalibrationStepIRData.objects.filter(session=session, read_status=False)
 
         inertial_data_list = list(calibration_inertial_data.values_list(*INERTIAL_DATA_FIELDS))
         semg_data_list = list(calibration_semg_data.values_list(*SEMG_DATA_FIELDS))
@@ -58,28 +59,32 @@ class CalibrationEndAssembler(KafkaAssembler):
         inertial_queryset.update(read_status=True)
 
     def _calculate_user_gold_standard(self, session: Session, procedure: Procedure):
-        user_gs = self._calculate_user_calibration_gold_standard(session, procedure)
+        user_calibration_gs = self._calculate_user_calibration_gold_standard(session, procedure)
         user_data_mean = DataClassUserCalibrationMean(semg=None, inertial=None)
 
-        calibration_factor = self._calculate_calibration_factor(user_gs, user_data_mean)
+        calibration_factor = self._calculate_calibration_factor(user_calibration_gs, user_data_mean)
+        treatment_gs = self._get_treatment_gold_standard()
 
-        self._calculate_user_treatment_gold_standard(calibration_factor, )
+        user_treatment_gs = self._calculate_user_treatment_gold_standard(calibration_factor, treatment_gs)
+
+        self._save_user_gold_standard(session, user_treatment_gs)
 
     def _get_treatment_gold_standard(self):
         """
-        Returns the Treatment Gold standard for a procedure from the models: [ProcedureGoldStandardSEMGData, ProcedureGoldStandardInertialData]
+        Returns the Treatment Gold standard from the models: [TreatmentGoldStandardInertialData, TreatmentGoldStandardSEMGData]
+        Treatment gold standard data has no multiple data rows. Only one row data with is_final_data=True is possible.
         :return: list, list
         """
         try:
-            inertial_gs = ProcedureGoldStandardInertialData.objects.get(procedure=procedure, is_final=True)
+            inertial_gs = TreatmentGoldStandardInertialData.objects.filter(is_final_data=True)
             inertial_gs_list = list(inertial_gs.values_list(*INERTIAL_DATA_FIELDS))
 
-            semg_gs = ProcedureGoldStandardSEMGData.objects.get(procedure=procedure, is_final=True)
+            semg_gs = TreatmentGoldStandardSEMGData.objects.filter(is_final_data=True)
             semg_gs_list = list(semg_gs.values_list(*SEMG_DATA_FIELDS))
 
-            return DataClassProcedureGoldStandard(semg_gs_list, inertial_gs_list)
-        except (ProcedureGoldStandardSEMGData.DoesNotExist, ProcedureGoldStandardInertialData.DoesNotExist):
-            logger.info("CalibrationEnd Assembler: Failed to fetch procedure gold standard.")
+            return DataClassTreatmentGoldStandard(semg_gs_list, inertial_gs_list)
+        except (TreatmentGoldStandardInertialData.DoesNotExist, TreatmentGoldStandardSEMGData.DoesNotExist):
+            logger.info("CalibrationEnd Assembler: Failed to fetch treatment gold standard.")
 
         return None, None
 
