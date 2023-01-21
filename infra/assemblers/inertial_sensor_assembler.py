@@ -27,14 +27,17 @@ class KafkaInertialSensorAssembler(KafkaAssembler):
             data = event.get("data")
             event_type = event.get("type", None)
 
-            if event_type and event_type == SessionTypes.CALIBRATION:
+            # Prepare serializer data based on type of session
+            data["session"] = event["session"]
+
+            if event_type and event_type.upper() == SessionTypes.CALIBRATION:
+                data["step"] = event["step"]
                 serializer = CalibrationStepInertialDataSerializer(data=data)
             else:
                 serializer = InertialSensorDataSerializer(data=data)
 
             serializer.is_valid(raise_exception=True)
             serializer.save()
-
             logger.info(f"InertialSensor Assembler: [{event.get('type')}] message has been saved. ")
         except Exception as e:
             raise FilterOutException(__name__, e)

@@ -1,10 +1,9 @@
 /**
-This is a sample message sent from SEMG Sensor to Engine for Calibration Phase.
+This is a sample message sent from SEMG Sensor to Engine for Treatment phase.
 **/
 {
-  "type": "calibration",
+  "type": "treatment",
   "session": "978df625-0734-49e3-a84b-b684844a6907",
-  "step": "7a394933-9fa9-4d22-854a-9b2fd9b3b4ce",
   "data": {
     "l5s1_lateral": "1.4",
     "l5s1_axial": "1.4",
@@ -24,9 +23,9 @@ This is a sample message sent from SEMG Sensor to Engine for Calibration Phase.
     "c1head_lateral": "1.4",
     "c1head_axial": "1.4",
     "c1head_flexion": "2.4",
-    "com_posx": "2.4",
+    "com_posx":  "2.4",
     "com_posy": "2.4",
-    "com_posz": "2.4"
+    "com_posz":  "2.4"
   }
 }
 

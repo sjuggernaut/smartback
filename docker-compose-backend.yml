@@ -1,0 +1,43 @@
+version: '3.3'
+
+services:
+  kafka-backend:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["kafka-backend"]
+    volumes:
+      - .:/app/
+    env_file:
+      - ./.env.dev
+    links:
+      - db:db
+      - redis:redis
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - 6380:6380
+    command:
+      - redis-server
+
+  db:
+    image: postgres:13.0-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=smartback
+      - POSTGRES_USER=smartback
+      - POSTGRES_PASSWORD=smartback
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+    external:
+      name: shared-network-smartback

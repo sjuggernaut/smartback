@@ -1,10 +1,9 @@
 /**
-This is a sample message sent from SEMG Sensor to Engine for Calibration Phase.
+This is a sample message sent from SEMG Sensor to Engine for treatment phase.
 **/
 {
-  "type": "calibration",
+  "type": "treatment",
   "session": "978df625-0734-49e3-a84b-b684844a6907",
-  "step": "7a394933-9fa9-4d22-854a-9b2fd9b3b4ce",
   "data": {
     "right_multifidus": "20",
     "left_multifidus": "20",

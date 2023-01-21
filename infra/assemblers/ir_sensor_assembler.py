@@ -27,6 +27,8 @@ class KafkaIRSensorAssembler(KafkaAssembler):
             data = event.get("data")
             event_type = event.get("type", None)
 
+            # Prepare serializer data based on type of session
+
             if event_type and event_type == SessionTypes.CALIBRATION:
                 serializer = CalibrationStepIRDataSerializer(data=data)
             else:

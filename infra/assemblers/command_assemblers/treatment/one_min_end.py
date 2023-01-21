@@ -27,7 +27,7 @@ class TreatmentOneMinuteEndDataProcessor:
         """
 
         logger.info(f"Processing Treatment one minute send IPC command for session {session.id}")
-        ipc_commands = TreatmentOneMinuteEndDataProcessor.is_all_ipc_commands_received(session)
+        ipc_commands = TreatmentOneMinuteEndDataProcessor.is_ipc_commands_received(session)
 
         if ipc_commands.session_exists:
             """
@@ -43,7 +43,9 @@ class TreatmentOneMinuteEndDataProcessor:
             """
             TreatmentOneMinuteEndDataProcessor.process_data(session)
             TreatmentOneMinuteEndDataProcessor.update_session_treatment_ipc_status()
-            #TODO: Create new record for SessionTreatmentIPCReceived
+
+            #TODO: Create new record for SessionTreatmentIPCReceived for next one minute loop cycle
+            #TODO: Set read_status=True for all the data from TreatmentSEMGData, TreatmentInertialData with session.
         else:
             #TODO: raise Exception("Session {session.id} hasn't received all three sensor commands for one minute data processing")
             logger.info(f"Session {session.id} hasn't received all three sensor commands for one minute data processing")
@@ -67,6 +69,10 @@ class TreatmentOneMinuteEndDataProcessor:
         session_instance = session_query.first()
         return DataClassIPCCommandReceived(session_exists=session_exists, session_instance=session_instance)
 
+    # @staticmethod
+    # def get_ir_thermal_mean(session: Session):
+
+
     @staticmethod
     def process_data(session: Session) -> bool:
         """
@@ -84,19 +90,20 @@ class TreatmentOneMinuteEndDataProcessor:
         :return:
         """
         try:
-            pass
-            # inertial_data = InertialSensorData.objects.filter(session=session, read_status=False)
-            # semg_data = SEMGSensorData.objects.filter(session=session, read_status=False)
-            # ir_data = IRSensorData.objects.filter(session=session, read_status=False)
-            #
-            # inertial_data_list = list(inertial_data.values_list(*INERTIAL_DATA_FIELDS))
-            # inertial_data_mean = get_mean(inertial_data_list)  # Single row value derived from
-            #
-            # semg_data_list = list(semg_data.values_list(*SEMG_DATA_FIELDS))
-            # semg_data_mean = get_mean(semg_data_list)
-            #
-            # ir_data_list = list(ir_data.values_list('thermal'))
-            # ir_data_mean = get_mean(ir_data_list)
+            TreatmentOneMinuteEndDataProcessor.check_ir_thermal_value()
+
+            inertial_data = TreatmentInertialData.objects.filter(session=session, read_status=False)
+            semg_data = TreatmentSEMGData.objects.filter(session=session, read_status=False)
+            ir_data = GenericIRSensorData.objects.filter(session=session, read_status=False)
+
+            inertial_data_list = list(inertial_data.values_list(*INERTIAL_DATA_FIELDS))
+            inertial_data_mean = get_mean(inertial_data_list)  # Single row value derived from
+
+            semg_data_list = list(semg_data.values_list(*SEMG_DATA_FIELDS))
+            semg_data_mean = get_mean(semg_data_list)
+
+            ir_data_list = list(ir_data.values_list('thermal'))
+            ir_data_mean = get_mean(ir_data_list)
             #
             # # compare the 3 mean values with their respective gold standard
             # # compute the IR energy stimulation and produce the value to Raspberry PI - IR LED. topic: ir-led-alerts
@@ -106,7 +113,7 @@ class TreatmentOneMinuteEndDataProcessor:
             logger.info(f"Treatment IPC: There is an error during treatment one minute end data processing: [{e}]")
 
     @staticmethod
-    def check_ir_thermal_value(user_ir_thermal_mean) -> bool:
+    def check_ir_thermal_value(user_ir_thermal_mean: float) -> bool:
         """
         Step 1
         Check if the thermal value from the IR sensor is below the configured value (42 degrees)

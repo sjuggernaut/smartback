@@ -4,7 +4,7 @@ from kafka.consumer.fetcher import ConsumerRecord
 
 from infra.assemblers.kafka_assembler import KafkaAssembler
 from infra.domain.alert.alert import Alert
-from infra.serializers import SEMGSensorDataSerializer, CalibrationStepSEMGDataSerializer
+from infra.serializers import *
 from infra.exceptions.filter_out import FilterOutException
 from infra.models import SessionTypes
 
@@ -19,14 +19,17 @@ class KafkaSEMGSensorAssembler(KafkaAssembler):
 
     def assemble(self, kafka_message: ConsumerRecord) -> Alert:
         logger.info(
-            f"SEMGSensor Assembler: Message received from [{kafka_message.offset}] on topic [{kafka_message.topic}] at [{kafka_message.timestamp}]")
+            f"SEMGSensor Assembler: Message received from Offset: [{kafka_message.offset}] on topic: [{kafka_message.topic}] at timestamp: [{kafka_message.timestamp}]")
         try:
             original = kafka_message.value.decode("utf-8")
             event = json.loads(original)
             data = event.get("data")
             event_type = event.get("type", None)
+            data["session"] = event["session"]
 
-            if event_type and event_type == SessionTypes.CALIBRATION:
+            # Prepare serializer data based on type of session
+            if event_type and event_type.upper() == SessionTypes.CALIBRATION:
+                data["step"] = event["step"]
                 serializer = CalibrationStepSEMGDataSerializer(data=data)
             else:
                 serializer = SEMGSensorDataSerializer(data=data)
