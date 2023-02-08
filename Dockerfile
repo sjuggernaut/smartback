@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install dependencies
-RUN apt-get update -y && apt-get install -y postgresql gcc python3-dev musl-dev libmagic-dev
+RUN apt-get update -y && apt-get install -y postgresql gcc python3-dev musl-dev libmagic-dev librdkafka-dev
 
 RUN apt-get install -y bash \
                        python3 \

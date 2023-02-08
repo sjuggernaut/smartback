@@ -1,5 +1,11 @@
 /**
 This is a sample message sent from SEMG Sensor to DE.
 **/
-{"type": "calibration", "data": {"session": "978df625-0734-49e3-a84b-b684844a6907", "device": "80d54581-3814-4dd1-b45f-aee1c2b9be27", "thermal": "10"}}
+{
+  "type": "calibration",
+  "data": {
+    "session": "978df625-0734-49e3-a84b-b684844a6907",
+    "thermal": "10"
+  }
+}
 

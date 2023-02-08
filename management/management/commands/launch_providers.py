@@ -11,4 +11,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         environment = options['environment'][0]
+        print("Environment - ", environment)
         launch_providers(environment)

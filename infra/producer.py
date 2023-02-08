@@ -4,6 +4,7 @@ from kafka import KafkaProducer
 
 class Producer:
     def __init__(self, kafka_producer_configuration, topic, **kwargs):
+        print("Connecting to Bootstrap Server : ", kafka_producer_configuration.get_bootstrap_servers())
         self._kafka_producer = KafkaProducer(
             bootstrap_servers=kafka_producer_configuration.get_bootstrap_servers(),
             api_version=(0, 10, 1),

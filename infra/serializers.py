@@ -48,3 +48,15 @@ class CalibrationStepCreateSerializer(ModelSerializer):
     class Meta:
         model = CalibrationStep
         fields = '__all__'
+
+
+class UserTreatmentGoldStandardInertialSensorDataSerializer(ModelSerializer):
+    class Meta:
+        model = UserGoldStandardInertialData
+        fields = '__all__'
+
+
+class UserTreatmentGoldStandardSEMGSensorDataSerializer(ModelSerializer):
+    class Meta:
+        model = UserGoldStandardSEMGData
+        fields = '__all__'

@@ -35,28 +35,59 @@ class TreatmentOneMinuteEndDataProcessor:
             sensors during treatment stage. 
             """
             # It is important to set this to true to avoid duplicate processing of the same session one minute
-            ipc_commands.session_instance.processing_status = True
             ipc_commands.session_instance.save()
 
             """
             Start processing the data from IRSensorData, SEMGSensorData, InertialSensorData for the session
             """
             TreatmentOneMinuteEndDataProcessor.process_data(session)
-            TreatmentOneMinuteEndDataProcessor.update_session_treatment_ipc_status()
+            TreatmentOneMinuteEndDataProcessor.update_ipc_processing_status()
 
-            #TODO: Create new record for SessionTreatmentIPCReceived for next one minute loop cycle
-            #TODO: Set read_status=True for all the data from TreatmentSEMGData, TreatmentInertialData with session.
+            # TODO: Create new record for SessionTreatmentIPCReceived for next one minute loop cycle
+            TreatmentOneMinuteEndDataProcessor.create_new_ipc_treatment_record()
+
+            # TODO: Set read_status=True for all the data from TreatmentSEMGData, TreatmentInertialData with session.
+            TreatmentOneMinuteEndDataProcessor.set_treatment_data_read_status()
         else:
-            #TODO: raise Exception("Session {session.id} hasn't received all three sensor commands for one minute data processing")
-            logger.info(f"Session {session.id} hasn't received all three sensor commands for one minute data processing")
+            # TODO: raise Exception("Session {session.id} hasn't received all three sensor commands for one minute data processing")
+            logger.info(
+                f"Session {session.id} hasn't received all three sensor commands for one minute data processing")
 
     @staticmethod
-    def update_session_treatment_ipc_status(session: Session):
+    def set_treatment_data_read_status(session: Session):
+        """
+        Update the read status for all the sensor data rows in SEMG and Inertial Tables
+        :param session:
+        :return:
+        """
+        TreatmentSEMGData.objects.filter(session=session).update(read_status=True)
+        TreatmentInertialData.objects.filter(session=session).update(read_status=True)
+
+    @staticmethod
+    def create_new_ipc_treatment_record(session: Session):
+        """
+        Create new record for SessionTreatmentIPCReceived for next one minute loop cycle.
+        Record created for current treatment session for the user.
+        :param session:
+        :return:
+        """
+        if session.type == SessionTypes.TREATMENT:
+            SessionTreatmentIPCReceived.objects.create(session=session,
+                                                       processing_status=False,
+                                                       semg_received=False,
+                                                       inertial_received=False,
+                                                       ir_received=False)
+        else:
+            logger.info(
+                f"The provided session type is not {SessionTypes.TREATMENT}. Skipping creation of IPC Treatment record.")
+
+    @staticmethod
+    def update_ipc_processing_status(session: Session):
         SessionTreatmentIPCReceived.objects.filter(session=session,
                                                    processing_status=False,
                                                    semg_received=True,
                                                    inertial_received=True,
-                                                   ir_received=True).update()
+                                                   ir_received=True).update(processing_status=True)
 
     @staticmethod
     def is_ipc_commands_received(session: Session) -> DataClassIPCCommandReceived:
@@ -71,7 +102,6 @@ class TreatmentOneMinuteEndDataProcessor:
 
     # @staticmethod
     # def get_ir_thermal_mean(session: Session):
-
 
     @staticmethod
     def process_data(session: Session) -> bool:

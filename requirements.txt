@@ -14,7 +14,7 @@ zipp==3.5.0
 djangorestframework-jwt
 channels
 redis
-psycopg2-binary
+psycopg2-binary==2.9.1
 python-magic-win64
 python-magic
 numpy

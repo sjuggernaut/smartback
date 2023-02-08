@@ -8,6 +8,8 @@ from infra.utils import get_mean, compare_with_gold_standard, multiply_list_with
     INERTIAL_DATA_FIELDS, SEMG_DATA_FIELDS
 from infra.domain.sensor_commands import SensorCommands
 from infra.domain.dataclasses import *
+from infra.serializers import UserTreatmentGoldStandardInertialSensorDataSerializer, \
+    UserTreatmentGoldStandardSEMGSensorDataSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +25,11 @@ Command Purpose: Calibration phase is ended when this command is received from t
 
 class CalibrationEndAssembler(KafkaAssembler):
     def assemble(self, command_data: dict) -> Alert:
+        """
+
+        :param command_data:
+        :return:
+        """
         logger.info(f"Received Calibration End command.")
 
         try:
@@ -32,10 +39,9 @@ class CalibrationEndAssembler(KafkaAssembler):
             procedure_id = command_data.get("procedure")
             procedure = Procedure.objects.get(id=procedure_id)
 
-            # self._calculate_user_gold_standard(session)
+            self._calculate_user_gold_standard(session)
 
-
-            # Send calibration stop command to user's sensors to stop the data sending process
+            # Send calibration_stop command to user's sensors to stop the data sending process
             return Alert(command=SensorCommands.set_calibration_stop, devices=command_data.get("devices"))
         except Exception as e:
             raise FilterOutException(__name__, e)
@@ -67,7 +73,7 @@ class CalibrationEndAssembler(KafkaAssembler):
 
         user_treatment_gs = self._calculate_user_treatment_gold_standard(calibration_factor, treatment_gs)
 
-        self._save_user_gold_standard(session, user_treatment_gs)
+        self._save_user_treatment_gold_standard(session, user_treatment_gs)
 
     def _get_treatment_gold_standard(self):
         """
@@ -79,8 +85,12 @@ class CalibrationEndAssembler(KafkaAssembler):
             inertial_gs = TreatmentGoldStandardInertialData.objects.filter(is_final_data=True)
             inertial_gs_list = list(inertial_gs.values_list(*INERTIAL_DATA_FIELDS))
 
+            inertial_gs_list = inertial_gs_list[0] if len(inertial_gs_list) > 0 else None
+
             semg_gs = TreatmentGoldStandardSEMGData.objects.filter(is_final_data=True)
             semg_gs_list = list(semg_gs.values_list(*SEMG_DATA_FIELDS))
+
+            semg_gs_list = semg_gs_list[0] if len(semg_gs_list) > 0 else None
 
             return DataClassTreatmentGoldStandard(semg_gs_list, inertial_gs_list)
         except (TreatmentGoldStandardInertialData.DoesNotExist, TreatmentGoldStandardSEMGData.DoesNotExist):
@@ -90,16 +100,20 @@ class CalibrationEndAssembler(KafkaAssembler):
 
     def _get_calibration_gold_standard(self, procedure):
         """
-        Returns the Calibration Gold standard for a procedure from the models: [ProcedureGoldStandardSEMGData, ProcedureGoldStandardInertialData]
+        Returns the Universal Calibration Gold standard for a procedure from the models: [ProcedureGoldStandardSEMGData, ProcedureGoldStandardInertialData]
         :param procedure: Procedure instance for which the user has performed calibration process
         :return: list, list
         """
         try:
-            inertial_gs = ProcedureGoldStandardInertialData.objects.get(procedure=procedure, is_final=True)
+            inertial_gs = ProcedureGoldStandardInertialData.objects.filter(procedure=procedure, is_final_data=True)
             inertial_gs_list = list(inertial_gs.values_list(*INERTIAL_DATA_FIELDS))
 
-            semg_gs = ProcedureGoldStandardSEMGData.objects.get(procedure=procedure, is_final=True)
+            inertial_gs_list = inertial_gs_list[0] if len(inertial_gs_list) > 0 else None
+
+            semg_gs = ProcedureGoldStandardSEMGData.objects.filter(procedure=procedure, is_final_data=True)
             semg_gs_list = list(semg_gs.values_list(*SEMG_DATA_FIELDS))
+
+            semg_gs_list = semg_gs_list[0] if len(semg_gs_list) > 0 else None
 
             return DataClassProcedureGoldStandard(semg_gs_list, inertial_gs_list)
         except (ProcedureGoldStandardSEMGData.DoesNotExist, ProcedureGoldStandardInertialData.DoesNotExist):
@@ -110,7 +124,7 @@ class CalibrationEndAssembler(KafkaAssembler):
     def _calculate_user_calibration_gold_standard(self, session, procedure):
         """
         STEP 1
-        This is Step 1 in calculation of user's treatment gold standard:
+        This step calculates user's calibration gold standard values.
         Formula: calibration gold standard values * BMI (scalar value) = User's calibration gold standard (vector)
         :param session:
         :param procedure:
@@ -147,7 +161,7 @@ class CalibrationEndAssembler(KafkaAssembler):
 
         return DataClassTreatmentGoldStandardForUser(semg=semg_gs, inertial=inertial_gs)
 
-    def _save_user_gold_standard(self, session, gold_standard: DataClassTreatmentGoldStandardForUser):
+    def _save_user_treatment_gold_standard(self, session, gold_standard: DataClassTreatmentGoldStandardForUser):
         """
         Step 1: store the gold standard for the user to UserGoldStandardSEMGData, UserGoldStandardInertialData
         Step 2:
@@ -157,4 +171,10 @@ class CalibrationEndAssembler(KafkaAssembler):
         :param gold_standard:
         :return:
         """
-        pass
+        inertial_serializer = UserTreatmentGoldStandardInertialSensorDataSerializer(data=gold_standard.inertial)
+        inertial_serializer.is_valid(raise_exception=True)
+        inertial_serializer.save()
+
+        semg_serializer = UserTreatmentGoldStandardSEMGSensorDataSerializer(data=gold_standard.semg)
+        semg_serializer.is_valid(raise_exception=True)
+        semg_serializer.save()

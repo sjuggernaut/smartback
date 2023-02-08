@@ -18,7 +18,7 @@ case "$1" in
   ;;
   kafka-backend)
       echo "Launching Sensor Consumers"
-      python3 manage.py launch_providers local
+      python3 manage.py launch_providers testing
   ;;
   python)
     python3

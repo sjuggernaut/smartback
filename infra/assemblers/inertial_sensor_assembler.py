@@ -18,12 +18,12 @@ class KafkaInertialSensorAssembler(KafkaAssembler):
     """
 
     def assemble(self, kafka_message: ConsumerRecord) -> Alert:
-        logger.info(
-            f"InertialSensor Assembler: Message received from [{kafka_message.offset}] on topic [{kafka_message.topic}] at [{kafka_message.timestamp}]")
+        logger.info(f"InertialSensor Assembler: Message received from [{kafka_message.offset}] on topic [{kafka_message.topic}] at [{kafka_message.timestamp}]")
 
         try:
             original = kafka_message.value.decode("utf-8")
             event = json.loads(original)
+            logger.info(f"InertialSensor Assembler: {original}")
             data = event.get("data")
             event_type = event.get("type", None)
 

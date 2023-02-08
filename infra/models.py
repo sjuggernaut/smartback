@@ -101,7 +101,6 @@ class GenericIRSensorData(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Session"
     )
-    device = models.ForeignKey(Devices, on_delete=models.PROTECT)
     thermal = models.FloatField(null=True, blank=True)
     read_status = models.BooleanField(default=False)
 
@@ -184,7 +183,6 @@ class ProcedureGoldStandardInertialData(GenericInertialSensorsData):
     """
     data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
-    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
     is_final_data = models.BooleanField(default=False)
 
 
@@ -196,7 +194,6 @@ class ProcedureGoldStandardSEMGData(GenericSEMGSensorsData):
     """
     data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
-    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
     is_final_data = models.BooleanField(default=False)
 
 
