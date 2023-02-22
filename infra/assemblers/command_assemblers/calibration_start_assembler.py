@@ -4,11 +4,12 @@ from django.contrib.auth import get_user_model
 
 from infra.assemblers.kafka_assembler import KafkaAssembler
 from infra.models import Session, SessionTypes, StatusChoices
-from infra.domain.alert.generic_sensor_alert import GenericSensorAlert
+from infra.domain.alert.calibration_alert import CalibrationStartAlert
 from infra.domain.sensor_commands import SensorCommands
-from infra.service.kafka_service import KafkaService
-from infra.producer import Producer
+
+
 from infra.domain.alert.alert import Alert
+from infra.domain.session_type import SessionType
 
 logger = logging.getLogger(__name__)
 
@@ -23,17 +24,12 @@ Command Purpose: Calibration phase is to be started when this command is receive
 """
 
 
-class CalibrationStartAssembler(KafkaAssembler):
-    # def __init__(self, configuration):
-    #     self.kafka_service = KafkaService(producer=Producer(configuration.get_kafka_producer_configuration(),
-    #                                                         configuration.get_kafka_ipc_topic()))
-
+class CalibrationStartAssembler:
     def assemble(self, command_data: dict) -> Alert:
-        logger.info(f"Received Calibration Phase Start command.")
+        logger.info(f"Received Calibration Start command.")
 
-        if not all(keys in command_data for keys in ("user", "devices")):
-            logger.info(
-                "Calibration Start: User and devices data not found in the message received from the user interface.")
+        if "user" not in command_data:
+            logger.info("Calibration Start: User data not found in the message received from the user interface.")
             return False
 
         # Get the user who has triggered calibration start command
@@ -43,11 +39,12 @@ class CalibrationStartAssembler(KafkaAssembler):
         session = self._create_session(user_id)
 
         # Produce the session to sensors.
-        alert = GenericSensorAlert(command=SensorCommands.set_session_alert,
-                                   session=session.pk,
-                                   devices=command_data.get("devices"))
+        alert = CalibrationStartAlert(command=SensorCommands.set_calibration_start.name,
+                                      session=str(session.pk),
+                                      session_type=SessionType.CALIBRATION.name.lower(),
+                                      # devices=command_data.get("devices")
+                                      )
         return alert
-        # self.kafka_service.send(alert)
 
     def _create_session(self, user_id):
         user = get_user_model().objects.get(pk=user_id)

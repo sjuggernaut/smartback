@@ -46,6 +46,9 @@ class _ProductionAlertConfiguration(AlertConfiguration):
     def get_kafka_semg_sensor_topic(self):
         return f"semgsensor-alert-production"
 
+    def get_kafka_ipc_engine_topic(self):
+        return "ipc-engine-alerts-local"
+
 
 class _LocalAlertConfiguration(AlertConfiguration):
     def __init__(self):
@@ -63,6 +66,9 @@ class _LocalAlertConfiguration(AlertConfiguration):
     def get_kafka_ipc_topic(self):
         return "ipc-alerts-local"
 
+    def get_kafka_ipc_engine_topic(self):
+        return "ipc-engine-alerts-local"
+
 
 class _TestingAlertConfiguration(AlertConfiguration):
     def __init__(self):
@@ -79,6 +85,9 @@ class _TestingAlertConfiguration(AlertConfiguration):
 
     def get_kafka_ipc_topic(self):
         return "ipc-alerts-local"
+
+    def get_kafka_ipc_engine_topic(self):
+        return "ipc-engine-alerts-local"
 
 
 def _validated_get_from_env(environment_variable):
@@ -128,7 +137,7 @@ class _KafkaProducerConfiguration(KafkaProducerConfiguration):
         return float(os.getenv("KAFKA_PRODUCER_FLUSH_TIMEOUT_MS", "10000"))
 
     def get_sasl_plain_username(self):
-        return float(os.getenv("SASL_USERNAME", ""))
+        return os.getenv("SASL_USERNAME", "")
 
     def get_sasl_plain_password(self):
-        return float(os.getenv("SASL_PASSWORD", ""))
+        return os.getenv("SASL_PASSWORD", "")

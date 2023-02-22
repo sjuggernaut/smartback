@@ -11,10 +11,12 @@ class SensorCommands(Enum):
     # Commands sent by the Engine to the Sensors
     set_session_alert = {"name": "set_session_alert",
                          "assembler": None}  # Sets the session ID on all the Sensor's processes
-    set_calibration_start = {"name": "set_calibration_start",
+    set_calibration_start = {"name": "calibration_start",
                              "assembler": None}  # Makes the sensors send data for calibration
-    set_calibration_stop = {"name": "set_calibration_stop",
-                            "assembler": None}  # Makes the sensors stop sending data for calibration
+    set_calibration_step_start = {"name": "calibration_step_start",
+                                  "assembler": None}  # Makes the sensors send data for calibration
+    set_calibration_end = {"name": "calibration_end",
+                           "assembler": None}  # Makes the sensors stop sending data for calibration
 
     def __init__(self, value):
         if "name" not in value:

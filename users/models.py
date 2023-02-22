@@ -23,7 +23,7 @@ class Devices(models.Model):
 
 class PersonalCharacteristics(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True, related_name="user_pc")
     birth_year = models.IntegerField(null=True, blank=True)
     height = models.FloatField(null=True, blank=True)  # in cms
     weight = models.FloatField(null=True, blank=True)  # In kgs

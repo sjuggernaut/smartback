@@ -7,6 +7,10 @@ class Producer:
         print("Connecting to Bootstrap Server : ", kafka_producer_configuration.get_bootstrap_servers())
         self._kafka_producer = KafkaProducer(
             bootstrap_servers=kafka_producer_configuration.get_bootstrap_servers(),
+            sasl_mechanism="PLAIN",
+            security_protocol="SASL_SSL",
+            sasl_plain_username=kafka_producer_configuration.get_sasl_plain_username(),
+            sasl_plain_password=kafka_producer_configuration.get_sasl_plain_password(),
             api_version=(0, 10, 1),
             acks="all",
             **kwargs

@@ -16,3 +16,6 @@ admin.site.register(Session)
 admin.site.register(CalibrationStep)
 admin.site.register(ProcedureStep)
 admin.site.register(Procedure)
+
+admin.site.register(ProcedureGoldStandardInertialData)
+admin.site.register(ProcedureGoldStandardSEMGData)

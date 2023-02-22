@@ -5,7 +5,7 @@ class GenericSensorAlert(Alert):
     def __init__(
             self,
             command,
-            devices,
+            devices=None,
             session=None
     ):
         self.command = command

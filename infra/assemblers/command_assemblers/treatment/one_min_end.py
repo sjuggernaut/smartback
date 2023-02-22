@@ -48,6 +48,8 @@ class TreatmentOneMinuteEndDataProcessor:
 
             # TODO: Set read_status=True for all the data from TreatmentSEMGData, TreatmentInertialData with session.
             TreatmentOneMinuteEndDataProcessor.set_treatment_data_read_status()
+
+            #
         else:
             # TODO: raise Exception("Session {session.id} hasn't received all three sensor commands for one minute data processing")
             logger.info(
