@@ -21,7 +21,6 @@ Command Purpose: Calibration phase is ended when this command is received from t
 
 
 class CalibrationEndAssembler(KafkaAssembler):
-    # TODO: Update command_data to ConsumerRecord type
     def assemble(self, command_data: dict) -> Alert:
         """
         :param command_data:

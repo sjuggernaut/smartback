@@ -1,4 +1,6 @@
 import logging
+from django.db.models import Q
+import math
 
 from infra.models import *
 from users.models import PersonalCharacteristics
@@ -14,7 +16,8 @@ logger = logging.getLogger(__name__)
 class CalibrationEndDataProcessor:
     def __init__(self, session: Session):
         self._session = session
-        user_pc = PersonalCharacteristics.objects.get(user=session.user)
+        # user_pc = PersonalCharacteristics.objects.get(user=session.user.id) # TODO: Rollback after meeting
+        user_pc = PersonalCharacteristics.objects.first()
         self.user_bmi = user_pc.get_bmi
 
     def process_user_calibration_session_data(self, session: Session, procedure: Procedure):
@@ -26,16 +29,25 @@ class CalibrationEndDataProcessor:
         :param procedure:
         :return:
         """
-        # Calculate Calibration GS
-        user_calibration_gs = self._calculate_user_calibration_gold_standard(session, procedure)
-        user_data_mean = DataClassUserCalibrationMean(semg=None, inertial=None)
+        user_data_mean = self._get_session_sensor_data()
+        if not user_data_mean:
+            logger.warning(
+                f"SESSION ID = [{session.pk}] : Error in processing user calibration end session data. There is no SEMG or Inertial data in the session to process.")
+            return False
 
         # Calculate Treatment GS
+        user_calibration_gs = self._calculate_user_calibration_gold_standard(session, procedure)
         calibration_factor = self.calculate_calibration_factor(user_calibration_gs, user_data_mean)
         treatment_gs = self.get_universal_treatment_gold_standard()
         user_treatment_gs = self.calculate_user_treatment_gold_standard(calibration_factor, treatment_gs)
 
+        # Save user treatment gold standard and set session data read status to true
         self._save_user_treatment_gold_standard(session, user_treatment_gs)
+        self._set_session_data_read_flag()
+
+    def _set_session_data_read_flag(self):
+        CalibrationStepSEMGData.objects.filter(session=self._session).update(read_status=True)
+        CalibrationStepInertialData.objects.filter(session=self._session).update(read_status=True)
 
     def calculate_user_treatment_gold_standard(self, calibration_factor: float,
                                                universal_treatment_gs: DataClassTreatmentGoldStandard):
@@ -69,6 +81,7 @@ class CalibrationEndDataProcessor:
 
         user_inertial_gs = multiply_list_with(self.user_bmi, procedure_calibration_gs.inertial)
         user_semg_gs = multiply_list_with(self.user_bmi, procedure_calibration_gs.semg)
+
         return DataClassUserCalibrationGoldStandard(user_semg_gs, user_inertial_gs)
 
     def calculate_calibration_factor(self, user_gs: DataClassUserCalibrationGoldStandard,
@@ -88,15 +101,38 @@ class CalibrationEndDataProcessor:
         calibration_inertial_data = CalibrationStepInertialData.objects.filter(session=self._session, read_status=False)
         # calibration_ir_data = CalibrationStepIRData.objects.filter(session=self._session, read_status=False)
 
-        inertial_data_list = list(calibration_inertial_data.values_list(*INERTIAL_DATA_FIELDS))
+        inertial_data_list = list(calibration_inertial_data.exclude(Q(com_posx__isnull=True) |
+                                                                    Q(com_posy__isnull=True) |
+                                                                    Q(com_posz__isnull=True) |
+                                                                    Q(c1head_flexion__isnull=True) |
+                                                                    Q(c1head_axial__isnull=True) |
+                                                                    Q(c1head_lateral__isnull=True) |
+                                                                    Q(t1c7_flexion__isnull=True) |
+                                                                    Q(t1c7_axial__isnull=True) |
+                                                                    Q(t1c7_lateral__isnull=True) |
+                                                                    Q(t9t8_flexion__isnull=True) |
+                                                                    Q(t9t8_axial__isnull=True) |
+                                                                    Q(t9t8_lateral__isnull=True) |
+                                                                    Q(l1t12_flexion__isnull=True) |
+                                                                    Q(l1t12_axial__isnull=True) |
+                                                                    Q(l1t12_lateral__isnull=True) |
+                                                                    Q(l5s1_lateral__isnull=True) |
+                                                                    Q(l5s1_axial__isnull=True) |
+                                                                    Q(l5s1_flexion__isnull=True) |
+                                                                    Q(l4l3_lateral__isnull=True) |
+                                                                    Q(l4l3_axial__isnull=True) |
+                                                                    Q(l4l3_flexion__isnull=True)).values_list(
+            *INERTIAL_DATA_FIELDS))
         semg_data_list = list(calibration_semg_data.values_list(*SEMG_DATA_FIELDS))
         # ir_data_list = list(calibration_ir_data.values_list('thermal'))
+
+        if len(semg_data_list) == 0 or len(inertial_data_list) == 0:
+            return False
 
         semg_data_mean = get_mean(semg_data_list)
         inertial_data_mean = get_mean(inertial_data_list)
 
         return DataClassUserCalibrationMean(semg=semg_data_mean, inertial=inertial_data_mean)
-
 
     def _update_read_status(self, semg_queryset, inertial_queryset, ir_queryset):
         semg_queryset.update(read_status=True)
@@ -113,11 +149,17 @@ class CalibrationEndDataProcessor:
         :param gold_standard:
         :return:
         """
-        inertial_serializer = UserTreatmentGoldStandardInertialSensorDataSerializer(data=gold_standard.inertial)
+        inertial_data, semg_data = self._transform_to_model_fields(gold_standard)
+        inertial_data["user"] = session.user.pk
+        inertial_data["is_final_data"] = True
+        semg_data["user"] = session.user.pk
+        semg_data["is_final_data"] = True
+
+        inertial_serializer = UserTreatmentGoldStandardInertialSensorDataSerializer(data=inertial_data)
         inertial_serializer.is_valid(raise_exception=True)
         inertial_serializer.save()
 
-        semg_serializer = UserTreatmentGoldStandardSEMGSensorDataSerializer(data=gold_standard.semg)
+        semg_serializer = UserTreatmentGoldStandardSEMGSensorDataSerializer(data=semg_data)
         semg_serializer.is_valid(raise_exception=True)
         semg_serializer.save()
 
@@ -164,3 +206,22 @@ class CalibrationEndDataProcessor:
             logger.info("CalibrationEnd Assembler: Failed to fetch procedure gold standard.")
 
         return None, None
+
+    def _transform_to_model_fields(self, values):
+        inertial_list = values.inertial
+        semg_list = values.semg
+        inertial_dict = dict.fromkeys(INERTIAL_DATA_FIELDS)
+        semg_dict = dict.fromkeys(SEMG_DATA_FIELDS)
+
+        inertial_dict_keys_list = list(inertial_dict.keys())
+        semg_dict_keys_list = list(semg_dict.keys())
+
+        for field_index, field_value in enumerate(inertial_list):
+            field_key = inertial_dict_keys_list[field_index]
+            inertial_dict[field_key] = field_value
+
+        for field_index, field_value in enumerate(semg_list):
+            field_key = semg_dict_keys_list[field_index]
+            semg_dict[field_key] = field_value
+
+        return inertial_dict, semg_dict

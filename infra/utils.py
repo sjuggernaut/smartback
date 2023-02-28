@@ -66,3 +66,4 @@ def negative_count(list_to_count):
 def count_nonzero(list_to_count):
     np_array = np.array(list_to_count)
     return np.count_nonzero(np_array)
+
