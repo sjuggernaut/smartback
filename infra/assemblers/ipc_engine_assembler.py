@@ -30,7 +30,10 @@ class IPCEngineCommandAssembler:
             command_text = event.get("command")
             command = Commands.__getitem__(command_text)
             alert = self.get_assembler(command).assemble(event)
-            self._kafka_service.send(alert)
+            if alert:
+                self._kafka_service.send(alert)
+            else:
+                logger.exception(f"Alert could not sent to the sensors for the event: {event}")
         except KeyError:
             raise InvalidCommandException(command_text)
         except Exception as e:

@@ -107,6 +107,7 @@ class GenericIRSensorData(models.Model):
     class Meta:
         abstract = True
 
+
 """
 ========================================================================================================
 Calibration Data Models 
@@ -262,15 +263,15 @@ class SessionTreatmentIPCReceived(models.Model):
     processing_status = models.BooleanField(default=False)  # Once the loop cycle finishes, set this to True
 
     # SEMG Received data
-    semg_received = models.BooleanField()
+    semg_received = models.BooleanField(default=False)
     semg_received_time = models.DateTimeField(auto_now_add=True)
 
     # Inertial Received data
-    inertial_received = models.BooleanField()
+    inertial_received = models.BooleanField(default=False)
     inertial_received_time = models.DateTimeField(auto_now_add=True)
 
     # IR Received data
-    ir_received = models.BooleanField()
+    ir_received = models.BooleanField(default=False)
     ir_received_time = models.DateTimeField(auto_now_add=True)
 
 
@@ -292,3 +293,7 @@ class TreatmentInertialData(GenericInertialSensorsData):
         verbose_name="Session"
     )
     read_status = models.BooleanField(default=False)
+
+
+class TreatmentIRData(GenericIRSensorData):
+    pass

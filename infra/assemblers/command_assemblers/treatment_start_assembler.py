@@ -5,9 +5,12 @@ from django.contrib.auth import get_user_model
 from infra.assemblers.kafka_assembler import KafkaAssembler
 from infra.domain.command_process import CommandProcess
 from infra.exceptions.filter_out import FilterOutException
-from infra.domain.alert.generic_sensor_alert import GenericSensorAlert
+from infra.domain.alert.generic_sensor_alert import TreatmentStartAlert
 from infra.domain.sensor_commands import SensorCommands
 from infra.models import Session, SessionTypes, StatusChoices
+
+from infra.domain.session_type import SessionType
+from infra.domain.alert.alert import Alert
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +26,12 @@ Command Purpose: Treatment phase is to be started when this command is received 
 
 
 class TreatmentStartAssembler(KafkaAssembler):
-    def assemble(self, command_data: dict) -> CommandProcess:
+    def assemble(self, command_data: dict) -> Alert:
         try:
             logger.info(f"Received Treatment Start command.")
 
-            if not all(keys in command_data for keys in ("user", "devices")):
-                logger.info(
-                    "Treatment Start: User and devices data not found in the message received from the user interface.")
+            if "user" not in command_data:
+                logger.info("Calibration Start: User data not found in the message received from the user interface.")
                 return False
 
             # Get the user who has triggered calibration start command
@@ -39,15 +41,17 @@ class TreatmentStartAssembler(KafkaAssembler):
             session = self._create_session(user_id)
 
             # Produce the session to sensors.
-            alert = GenericSensorAlert(command=SensorCommands.set_session_alert,
-                                       session=session.pk,
-                                       devices=command_data.get("devices"))
+            alert = TreatmentStartAlert(command=SensorCommands.set_treatment_start.name,
+                                        session=str(session.pk),
+                                        session_type=SessionType.TREATMENT.name.lower(),
+                                        )
+            # devices=command_data.get("devices")
             return alert
         except Exception as e:
             raise FilterOutException(__name__, e)
 
     def _create_session(self, user_id):
         user = get_user_model().objects.get(pk=user_id)
-        session = Session(user=user, type=SessionTypes.TREATMENT, status=StatusChoices.STARTED)
+        session = Session(user=user, type=SessionTypes.TREATMENT, status=StatusChoices.CREATED)
         session.save()
         return session

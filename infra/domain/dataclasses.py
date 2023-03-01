@@ -52,7 +52,7 @@ class DataClassSEMGLefttSideValues:
 
 @dataclass
 class DataClassUserTreatmentMean(DataClassValueLists):
-    pass
+    ir: list
 
 
 @dataclass

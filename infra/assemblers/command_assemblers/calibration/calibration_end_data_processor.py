@@ -155,6 +155,10 @@ class CalibrationEndDataProcessor:
         semg_data["user"] = session.user.pk
         semg_data["is_final_data"] = True
 
+        # Remove previous gold standard values for the user
+        UserGoldStandardInertialData.objects.filter(user=session.user).delete()
+        UserGoldStandardSEMGData.objects.filter(user=session.user).delete()
+
         inertial_serializer = UserTreatmentGoldStandardInertialSensorDataSerializer(data=inertial_data)
         inertial_serializer.is_valid(raise_exception=True)
         inertial_serializer.save()

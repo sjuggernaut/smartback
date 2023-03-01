@@ -34,11 +34,16 @@ class TreatmentOneMinEndAssembler(KafkaAssembler):
             """
             SessionTreatmentIPCReceived.objects.filter(session=session).update(**{device_type_received_field: True})
 
-            """
-            Send the treatment data to IR LED through ipc-alerts topic.
-            """
             treatment_data = TreatmentOneMinuteEndDataProcessor.check_all_ipc_commands(session)
 
-            ipc_producer.send(treatment_data)
+            if treatment_data:
+                logger.info(f"Treatment data for the session: {session} :: {treatment_data}")
+                pass
+                """
+                Send the treatment data to IR LED through ipc-alerts topic.
+                """
+                # ipc_producer.send(treatment_data)
+            else:
+                logger.exception(f"There was an error processing the one minute data for the session: {session.pk}")
         except Exception as e:
-            raise FilterOutException(__name__, e)
+            raise FilterOutException(__name__, str(e))

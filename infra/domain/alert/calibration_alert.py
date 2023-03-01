@@ -68,3 +68,4 @@ class CalibrationEndAlert(Alert):
             "command": self.command,
             "session": self.session
         }
+

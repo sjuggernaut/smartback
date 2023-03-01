@@ -26,7 +26,7 @@ class TreatmentOneMinuteEndDataProcessor:
         :return:
         """
 
-        logger.info(f"Processing Treatment one minute send IPC command for session {session.id}")
+        logger.info(f"Processing Treatment one-minute end IPC command for session {session.id}")
         ipc_commands = TreatmentOneMinuteEndDataProcessor.is_ipc_commands_received(session)
 
         if ipc_commands.session_exists:
@@ -40,20 +40,25 @@ class TreatmentOneMinuteEndDataProcessor:
             """
             Start processing the data from IRSensorData, SEMGSensorData, InertialSensorData for the session
             """
-            TreatmentOneMinuteEndDataProcessor.process_data(session)
-            TreatmentOneMinuteEndDataProcessor.update_ipc_processing_status()
+            stimulation_energy, stimulation_site = TreatmentOneMinuteEndDataProcessor.process_data(session)
+            TreatmentOneMinuteEndDataProcessor.update_ipc_processing_status(session)
 
-            # TODO: Create new record for SessionTreatmentIPCReceived for next one minute loop cycle
-            TreatmentOneMinuteEndDataProcessor.create_new_ipc_treatment_record()
+            """
+            Create new record for SessionTreatmentIPCReceived for next one minute loop cycle
+            """
+            TreatmentOneMinuteEndDataProcessor.create_new_ipc_treatment_record(session)
 
-            # TODO: Set read_status=True for all the data from TreatmentSEMGData, TreatmentInertialData with session.
-            TreatmentOneMinuteEndDataProcessor.set_treatment_data_read_status()
+            """
+            Set read_status=True for all the data from TreatmentSEMGData, TreatmentInertialData with session.
+            """
+            TreatmentOneMinuteEndDataProcessor.set_treatment_data_read_status(session)
 
-            #
+            return stimulation_energy, stimulation_site
         else:
             # TODO: raise Exception("Session {session.id} hasn't received all three sensor commands for one minute data processing")
             logger.info(
                 f"Session {session.id} hasn't received all three sensor commands for one minute data processing")
+            return False
 
     @staticmethod
     def set_treatment_data_read_status(session: Session):
@@ -102,11 +107,8 @@ class TreatmentOneMinuteEndDataProcessor:
         session_instance = session_query.first()
         return DataClassIPCCommandReceived(session_exists=session_exists, session_instance=session_instance)
 
-    # @staticmethod
-    # def get_ir_thermal_mean(session: Session):
-
     @staticmethod
-    def process_data(session: Session) -> bool:
+    def process_data(session: Session):
         """
         DO :: Fetch data from IRSensorData, SEMGSensorData, InertialSensorData by Session and read_status=False
         All this data is expected to be from the latest One minute send process from sensors.
@@ -122,36 +124,62 @@ class TreatmentOneMinuteEndDataProcessor:
         :return:
         """
         try:
-            TreatmentOneMinuteEndDataProcessor.check_ir_thermal_value()
+            """
+            User's thermal value is below the threshold.
+            Now process the session's previous one minute data and send the stimulation energy
+            """
+            user_data_mean = TreatmentOneMinuteEndDataProcessor.get_session_one_minute_data_mean(session)
+            ir_mean = user_data_mean.ir[0]
 
-            inertial_data = TreatmentInertialData.objects.filter(session=session, read_status=False)
-            semg_data = TreatmentSEMGData.objects.filter(session=session, read_status=False)
-            ir_data = GenericIRSensorData.objects.filter(session=session, read_status=False)
+            thermal_check = is_temp_higher(ir_mean)
+            if thermal_check:
+                """
+                Thermal value from the IR sensor is higher than the allowed value.
+                """
+                logger.warning(
+                    f"Thermal value from the IR sensor is higher than the allowed value. Session : {session.pk}")
+                # raise exception
+                return False
 
-            inertial_data_list = list(inertial_data.values_list(*INERTIAL_DATA_FIELDS))
-            inertial_data_mean = get_mean(inertial_data_list)  # Single row value derived from
+            user_treatment_gold_standard = TreatmentOneMinuteEndDataProcessor.get_user_treatment_gold_standard(session)
 
-            semg_data_list = list(semg_data.values_list(*SEMG_DATA_FIELDS))
-            semg_data_mean = get_mean(semg_data_list)
+            """
+            Calculate differential values for Inertial sensor, semg 
+            """
+            differential_values = TreatmentOneMinuteEndDataProcessor.calculate_differential_values(
+                user_treatment_gold_standard,
+                user_data_mean)
 
-            ir_data_list = list(ir_data.values_list('thermal'))
-            ir_data_mean = get_mean(ir_data_list)
-            #
-            # # compare the 3 mean values with their respective gold standard
-            # # compute the IR energy stimulation and produce the value to Raspberry PI - IR LED. topic: ir-led-alerts
+            """
+            Calculate center of mass differential values 
+            """
+            center_of_mass_differential_values = TreatmentOneMinuteEndDataProcessor.get_center_of_mass_differential(
+                differential_values.inertial)
+            stimulation_site = TreatmentOneMinuteEndDataProcessor.calculate_stimulation_site(differential_values)
+            stimulation_energy = TreatmentOneMinuteEndDataProcessor.calculate_stimulation_energy(
+                center_of_mass_differential_values, differential_values.inertial)
 
-
+            return stimulation_energy, stimulation_site
         except Exception as e:
-            logger.info(f"Treatment IPC: There is an error during treatment one minute end data processing: [{e}]")
+            logger.info(f"Treatment IPC: There is an error during treatment one minute end data processing: [{str(e)}]")
+            return False
 
     @staticmethod
-    def check_ir_thermal_value(user_ir_thermal_mean: float) -> bool:
-        """
-        Step 1
-        Check if the thermal value from the IR sensor is below the configured value (42 degrees)
-        :return:
-        """
-        return is_temp_higher(user_ir_thermal_mean)
+    def get_session_one_minute_data_mean(session):
+        inertial_data = TreatmentInertialData.objects.filter(session=session, read_status=False)
+        semg_data = TreatmentSEMGData.objects.filter(session=session, read_status=False)
+        ir_data = TreatmentIRData.objects.filter(session=session, read_status=False)
+
+        inertial_data_list = list(inertial_data.values_list(*INERTIAL_DATA_FIELDS))
+        inertial_data_mean = get_mean(inertial_data_list)  # Single row value derived from
+
+        semg_data_list = list(semg_data.values_list(*SEMG_DATA_FIELDS))
+        semg_data_mean = get_mean(semg_data_list)
+
+        ir_data_list = list(ir_data.values_list('thermal'))
+        ir_data_mean = get_mean(ir_data_list)
+
+        return DataClassUserTreatmentMean(inertial=inertial_data_mean, semg=semg_data_mean, ir=ir_data_mean)
 
     @staticmethod
     def get_user_treatment_gold_standard(session: Session):
@@ -167,18 +195,17 @@ class TreatmentOneMinuteEndDataProcessor:
         inertial_gs_list = list(user_inertial_gs.values_list(*INERTIAL_DATA_FIELDS))
         semg_gs_list = list(user_semg_gs.values_list(*SEMG_DATA_FIELDS))
 
-        if len(inertial_gs_list) > 1:
+        if len(inertial_gs_list) == 1:
             inertial_gs_list = inertial_gs_list[0]
 
-        if len(semg_gs_list) > 1:
+        if len(semg_gs_list) == 1:
             semg_gs_list = semg_gs_list[0]
 
         return DataClassTreatmentGoldStandardForUser(semg=semg_gs_list, inertial=inertial_gs_list)
 
     @staticmethod
     def calculate_differential_values(user_treatment_gs: DataClassTreatmentGoldStandardForUser,
-                                      user_data_mean: DataClassUserTreatmentMean
-                                      ):
+                                      user_data_mean: DataClassUserTreatmentMean):
         """
         ===========================================================================================================
         SEMG Differential Value
@@ -195,7 +222,7 @@ class TreatmentOneMinuteEndDataProcessor:
 
         :return:
         """
-        # ====================== SEMG Calculation ======================
+        # ====================== 1. SEMG Calculation ======================
         right_semg_gs = [right_semg_item for right_semg_index, right_semg_item in enumerate(user_treatment_gs.semg) if
                          right_semg_index in SEMG_DATA_FIELDS_RIGHT_INDICES]
         right_semg_mean = [right_semg_mean_item for right_semg_mean_index, right_semg_mean_item in
@@ -207,10 +234,9 @@ class TreatmentOneMinuteEndDataProcessor:
         left_semg_mean = [left_semg_mean_item for left_semg_mean_index, left_semg_mean_item in
                           enumerate(user_data_mean.semg) if left_semg_mean_index in SEMG_DATA_FIELDS_LEFT_INDICES]
         left_diff = subtract(left_semg_gs, left_semg_mean)
-
         semg_differential_value = subtract(right_diff, left_diff)
 
-        # ====================== Inertial Calculation ======================
+        # ====================== 2. Inertial Calculation ======================
         inertial_differential_value = subtract(user_treatment_gs.inertial, user_data_mean.inertial)
 
         return DataClassDifferentialValuesForTreatment(semg=semg_differential_value,
