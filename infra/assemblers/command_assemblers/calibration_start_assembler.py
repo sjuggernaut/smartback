@@ -48,6 +48,6 @@ class CalibrationStartAssembler:
 
     def _create_session(self, user_id):
         user = get_user_model().objects.get(pk=user_id)
-        session = Session(user=user, type=SessionTypes.CALIBRATION, status=StatusChoices.STARTED)
+        session = Session(user=user, type=SessionTypes.CALIBRATION, status=StatusChoices.CREATED)
         session.save()
         return session

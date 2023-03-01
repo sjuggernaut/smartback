@@ -41,7 +41,7 @@ class CalibrationStepStartAssembler(KafkaAssembler):
         return alert
 
     def _create_calibration_step(self, procedure_step: ProcedureStep, user):
-        active_session = Session.objects.filter(user=user).last()
+        active_session = Session.objects.filter(user=user, status=StatusChoices.CREATED).last()
         calibration_step = CalibrationStep(session=active_session, step=procedure_step)
         calibration_step.save()
         return calibration_step
