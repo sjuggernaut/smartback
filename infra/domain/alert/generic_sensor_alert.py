@@ -53,3 +53,25 @@ class TreatmentStartDataSendAlert(Alert):
             "command": self.command,
             "session": self.session,
         }
+
+
+class TreatmentResultAlert(Alert):
+    def __init__(
+            self,
+            command,
+            session,
+            energy,
+            side
+    ):
+        self.command = command
+        self.session = session
+        self.energy = energy
+        self.side = side
+
+    def prepare_to_send(self):
+        return {
+            "command": self.command,
+            "session": self.session,
+            "energy": self.energy,
+            "side": self.side
+        }

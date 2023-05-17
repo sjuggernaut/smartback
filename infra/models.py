@@ -144,10 +144,10 @@ class CalibrationStep(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     read_status = models.BooleanField(default=False)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['session', 'step'], name='Single-Calibration-with-a-step-constraint')
-        ]
+    # class Meta:
+    #     constraints = [
+    #         models.UniqueConstraint(fields=['session', 'step'], name='Single-Calibration-with-a-step-constraint')
+    #     ]
 
 
 class CalibrationStepSEMGData(GenericSEMGSensorsData):

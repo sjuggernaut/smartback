@@ -29,8 +29,9 @@ class CalibrationEndAssembler(KafkaAssembler):
         logger.info(f"Received Calibration End command.")
 
         try:
-            session_id = command_data.get("session")
-            session = Session.objects.get(id=session_id)
+            user = command_data.get("user")
+            session = Session.objects.filter(user=user, status=StatusChoices.CREATED,
+                                             type=SessionTypes.CALIBRATION).last()
 
             procedure_name = command_data.get("procedure")
             procedure = Procedure.objects.get(name=procedure_name)
@@ -39,6 +40,6 @@ class CalibrationEndAssembler(KafkaAssembler):
             data_processor.process_user_calibration_session_data(session, procedure)
 
             # Send calibration_stop command to user's sensors to stop the data sending process
-            return CalibrationEndAlert(command=SensorCommands.set_calibration_end.name, session=session_id)
+            return CalibrationEndAlert(command=SensorCommands.set_calibration_end.name, session=session.id)
         except Exception as e:
             raise FilterOutException(__name__, e)

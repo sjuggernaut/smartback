@@ -8,12 +8,12 @@ from infra.assemblers.command_assemblers.calibration_start_assembler import Cali
 from infra.assemblers.command_assemblers.treatment_start_assembler import TreatmentStartAssembler
 from infra.assemblers.command_assemblers.treatment_one_min_end_assembler import TreatmentOneMinEndAssembler
 from infra.assemblers.command_assemblers.treatment_start_data_send_assembler import TreatmentStartDataSendAssembler
+from infra.producer import Producer
 
 from smartback.configuration import get_config
 
 environment = os.getenv("ENVIRONMENT")
 configuration = get_config(environment)
-
 
 class Commands(Enum):
     # Commands received by the Engine

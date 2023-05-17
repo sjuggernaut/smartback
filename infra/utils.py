@@ -67,3 +67,6 @@ def count_nonzero(list_to_count):
     np_array = np.array(list_to_count)
     return np.count_nonzero(np_array)
 
+
+def dict_contains_keys(data: dict, keys: list):
+    return set(keys) <= set(data)

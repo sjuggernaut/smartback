@@ -71,8 +71,7 @@ def _create_inertial_sensor_consumer_thread(configuration):
 
 
 def _create_ipc_commands_consumer_thread(configuration):
-    kafka_service = KafkaService(
-        producer=Producer(configuration.get_kafka_producer_configuration(), configuration.get_kafka_ipc_topic()))
+    kafka_service = KafkaService(producer=Producer(configuration.get_kafka_producer_configuration(), configuration.get_kafka_ipc_topic()))
     ipc_engine_alerts_api = KafkaAlertApi(
         IPCEngineCommandAssembler(kafka_service)
     )

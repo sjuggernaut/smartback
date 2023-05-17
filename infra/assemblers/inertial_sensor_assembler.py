@@ -7,6 +7,7 @@ from kafka.consumer.fetcher import ConsumerRecord
 from infra.serializers import InertialSensorDataSerializer, CalibrationStepInertialDataSerializer
 from infra.exceptions.filter_out import FilterOutException
 from infra.models import SessionTypes
+from infra.utils import dict_contains_keys, INERTIAL_DATA_FIELDS
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,9 @@ class KafkaInertialSensorAssembler(KafkaAssembler):
             logger.info(f"InertialSensor Assembler: {original}")
             data = event.get("data")
             event_type = event.get("type", None)
+
+            if not dict_contains_keys(data, INERTIAL_DATA_FIELDS):
+                raise FilterOutException(__name__, "Inertial data does not contain all the required fields.")
 
             # Prepare serializer data based on type of session
             data["session"] = event["session"]

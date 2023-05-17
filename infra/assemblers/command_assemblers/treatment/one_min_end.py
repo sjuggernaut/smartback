@@ -31,7 +31,7 @@ class TreatmentOneMinuteEndDataProcessor:
 
         if ipc_commands.session_exists:
             """
-            If this condition is True: All the 3 required sensor one mind end commands have been received from the 
+            If this condition is True: All the 3 required sensor one min end commands have been received from the 
             sensors during treatment stage. 
             """
             # It is important to set this to true to avoid duplicate processing of the same session one minute
@@ -53,7 +53,10 @@ class TreatmentOneMinuteEndDataProcessor:
             """
             TreatmentOneMinuteEndDataProcessor.set_treatment_data_read_status(session)
 
-            return stimulation_energy, stimulation_site
+            return {
+                "energy": stimulation_energy,
+                "site": stimulation_site.side
+            }
         else:
             # TODO: raise Exception("Session {session.id} hasn't received all three sensor commands for one minute data processing")
             logger.info(
@@ -118,8 +121,7 @@ class TreatmentOneMinuteEndDataProcessor:
                 2.1: compare with gold standard
                 2.2: determine left or right side for stimulation
             3. IR Data: Compute Mean data: check if mean data is less than 42 degrees celsius
-        DO :: Compute Stimulation Output based on the above data (formula yet to be given)
-        DO :: Send the result to IPC topic for stimulation
+        DO :: Compute Stimulation Output based on the above data
         :param session:
         :return:
         """
@@ -129,6 +131,12 @@ class TreatmentOneMinuteEndDataProcessor:
             Now process the session's previous one minute data and send the stimulation energy
             """
             user_data_mean = TreatmentOneMinuteEndDataProcessor.get_session_one_minute_data_mean(session)
+
+            logger.info("========================================================")
+            logger.info("USER DATA MEAN")
+            logger.info(user_data_mean)
+            logger.info("========================================================")
+
             ir_mean = user_data_mean.ir[0]
 
             thermal_check = is_temp_higher(ir_mean)
@@ -150,11 +158,15 @@ class TreatmentOneMinuteEndDataProcessor:
                 user_treatment_gold_standard,
                 user_data_mean)
 
+            print("User data mean")
+            print(user_data_mean)
+
             """
             Calculate center of mass differential values 
             """
             center_of_mass_differential_values = TreatmentOneMinuteEndDataProcessor.get_center_of_mass_differential(
                 differential_values.inertial)
+
             stimulation_site = TreatmentOneMinuteEndDataProcessor.calculate_stimulation_site(differential_values)
             stimulation_energy = TreatmentOneMinuteEndDataProcessor.calculate_stimulation_energy(
                 center_of_mass_differential_values, differential_values.inertial)
@@ -173,8 +185,18 @@ class TreatmentOneMinuteEndDataProcessor:
         inertial_data_list = list(inertial_data.values_list(*INERTIAL_DATA_FIELDS))
         inertial_data_mean = get_mean(inertial_data_list)  # Single row value derived from
 
+        logger.info("========================================================")
+        logger.info("INERTIAL DATA MEAN")
+        logger.info(inertial_data_mean)
+        logger.info("========================================================")
+
         semg_data_list = list(semg_data.values_list(*SEMG_DATA_FIELDS))
         semg_data_mean = get_mean(semg_data_list)
+
+        logger.info("========================================================")
+        logger.info("SEMG DATA MEAN")
+        logger.info(semg_data_mean)
+        logger.info("========================================================")
 
         ir_data_list = list(ir_data.values_list('thermal'))
         ir_data_mean = get_mean(ir_data_list)
@@ -201,6 +223,11 @@ class TreatmentOneMinuteEndDataProcessor:
         if len(semg_gs_list) == 1:
             semg_gs_list = semg_gs_list[0]
 
+        logger.info("========================================================")
+        logger.info("USER TREATMENT GOLD STANDARD")
+        logger.info(inertial_gs_list)
+        logger.info(semg_gs_list)
+        logger.info("========================================================")
         return DataClassTreatmentGoldStandardForUser(semg=semg_gs_list, inertial=inertial_gs_list)
 
     @staticmethod
@@ -229,15 +256,40 @@ class TreatmentOneMinuteEndDataProcessor:
                            enumerate(user_data_mean.semg) if right_semg_mean_index in SEMG_DATA_FIELDS_RIGHT_INDICES]
         right_diff = subtract(right_semg_gs, right_semg_mean)
 
+        logger.info("========================================================")
+        logger.info("DIFFERENTIAL VALUES: RIGHT SEMG")
+        logger.info(right_diff)
+        logger.info("========================================================")
+
+
+        # Left SEMG
         left_semg_gs = [left_semg_item for left_semg_index, left_semg_item in enumerate(user_treatment_gs.semg) if
                         left_semg_index in SEMG_DATA_FIELDS_LEFT_INDICES]
         left_semg_mean = [left_semg_mean_item for left_semg_mean_index, left_semg_mean_item in
                           enumerate(user_data_mean.semg) if left_semg_mean_index in SEMG_DATA_FIELDS_LEFT_INDICES]
         left_diff = subtract(left_semg_gs, left_semg_mean)
+
+        logger.info("========================================================")
+        logger.info("DIFFERENTIAL VALUES: LEFT SEMG")
+        logger.info(left_diff)
+        logger.info("========================================================")
+
+
         semg_differential_value = subtract(right_diff, left_diff)
+
+        logger.info("========================================================")
+        logger.info("SEMG DIFFERENTIAL VALUES")
+        logger.info(semg_differential_value)
+        logger.info("========================================================")
+
 
         # ====================== 2. Inertial Calculation ======================
         inertial_differential_value = subtract(user_treatment_gs.inertial, user_data_mean.inertial)
+
+        logger.info("========================================================")
+        logger.info("INERTIAL DIFFERENTIAL VALUES")
+        logger.info(inertial_differential_value)
+        logger.info("========================================================")
 
         return DataClassDifferentialValuesForTreatment(semg=semg_differential_value,
                                                        inertial=inertial_differential_value)
@@ -335,6 +387,12 @@ class TreatmentOneMinuteEndDataProcessor:
         :param self:
         :return: float -  Percentage of the stimulation output value
         """
+        logger.info("========================================================")
+        logger.info("FINAL CALCULATION VALUE")
+        logger.info(com_differential)
+        logger.info(inertial_differential)
+        logger.info("========================================================")
+
         energy = (average(com_differential) * average(inertial_differential)) / 60
 
         return energy * 100

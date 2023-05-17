@@ -1,5 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from kafka import KafkaProducer
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Producer:
@@ -19,6 +22,7 @@ class Producer:
         self._flush_timeout = kafka_producer_configuration.get_flush_timeout()
 
     def produce(self, message, **kwargs):
+        logger.info(f"Producing to {self._topic} ::: {message}")
         self._kafka_producer.send(self._topic, message.encode("utf-8"), **kwargs)
         self._kafka_producer.flush(self._flush_timeout)
 

@@ -7,6 +7,7 @@ from infra.domain.alert.alert import Alert
 from infra.serializers import *
 from infra.exceptions.filter_out import FilterOutException
 from infra.models import SessionTypes
+from infra.utils import dict_contains_keys, SEMG_DATA_FIELDS
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,10 @@ class KafkaSEMGSensorAssembler(KafkaAssembler):
             event = json.loads(original)
             data = event.get("data")
             event_type = event.get("type", None)
+
+            if not dict_contains_keys(data, SEMG_DATA_FIELDS):
+                raise FilterOutException(__name__, "SEMG data does not contain all the required fields.")
+
             data["session"] = event["session"]
 
             # Prepare serializer data based on type of session

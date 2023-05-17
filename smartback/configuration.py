@@ -47,7 +47,10 @@ class _ProductionAlertConfiguration(AlertConfiguration):
         return f"semgsensor-alert-production"
 
     def get_kafka_ipc_engine_topic(self):
-        return "ipc-engine-alerts-local"
+        return "ipc-engine-alerts-production"
+
+    def get_kafka_ipc_results_topic(self):
+        return "ipc-engine-alerts-production"
 
 
 class _LocalAlertConfiguration(AlertConfiguration):
@@ -69,6 +72,9 @@ class _LocalAlertConfiguration(AlertConfiguration):
     def get_kafka_ipc_engine_topic(self):
         return "ipc-engine-alerts-local"
 
+    def get_kafka_ipc_results_topic(self):
+        return "ipc-engine-alerts-local"
+
 
 class _TestingAlertConfiguration(AlertConfiguration):
     def __init__(self):
@@ -87,6 +93,9 @@ class _TestingAlertConfiguration(AlertConfiguration):
         return "ipc-alerts-local"
 
     def get_kafka_ipc_engine_topic(self):
+        return "ipc-engine-alerts-local"
+
+    def get_kafka_ipc_results_topic(self):
         return "ipc-engine-alerts-local"
 
 
