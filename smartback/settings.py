@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'infra',
     'management',
     'users',
-    'calibration'
+    'calibration',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -160,3 +161,5 @@ LOGGING = {
         'level': 'INFO'
     }
 }
+
+APPEND_SLASH = False

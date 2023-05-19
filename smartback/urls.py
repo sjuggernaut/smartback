@@ -21,6 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('token/', obtain_auth_token, name='api_token_auth'),
-    path('infra/', include('infra.urls'), name='infra')
-    # path('calibration/', include('calibration.urls'), name='calibration'),
+    path('api/', include('api.urls'))
 ]

@@ -260,6 +260,7 @@ class SessionTreatmentIPCReceived(models.Model):
     """
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     session = models.ForeignKey(Session, on_delete=models.CASCADE, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
     processing_status = models.BooleanField(default=False)  # Once the loop cycle finishes, set this to True
 
     # SEMG Received data
