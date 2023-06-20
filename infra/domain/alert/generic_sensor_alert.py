@@ -55,6 +55,22 @@ class TreatmentStartDataSendAlert(Alert):
         }
 
 
+class TreatmentAbruptDataSendAlert(Alert):
+    def __init__(
+            self,
+            command,
+            user
+    ):
+        self.command = command
+        self.user = user
+
+    def prepare_to_send(self):
+        return {
+            "command": self.command,
+            "user": self.user,
+        }
+
+
 class TreatmentResultAlert(Alert):
     def __init__(
             self,
@@ -74,4 +90,58 @@ class TreatmentResultAlert(Alert):
             "session": self.session,
             "energy": self.energy,
             "side": self.side
+        }
+
+
+class SessionStartAlert(Alert):
+    def __init__(
+            self,
+            command,
+            user
+    ):
+        self.command = command
+        self.user = user
+
+    def prepare_to_send(self):
+        return {
+            "command": self.command,
+            "user": self.user
+        }
+
+
+class CalibrationStepStartAlertEngine(Alert):
+    def __init__(
+            self,
+            command,
+            user,
+            step
+    ):
+        self.command = command
+        self.user = user
+        self.step = step
+
+    def prepare_to_send(self):
+        return {
+            "command": self.command,
+            "user": self.user,
+            "step": self.step
+        }
+
+
+class CalibrationEndAlertEngine(Alert):
+    def __init__(
+            self,
+            command,
+            user,
+            procedure
+    ):
+        self.command = command
+        self.user = user
+        self.procedure = procedure
+
+    def prepare_to_send(self):
+        return {
+            "command": self.command,
+            "user": self.user,
+            "procedure": self.procedure
         }

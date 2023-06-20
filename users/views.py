@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from users.serializers import *
-from rest_framework import generics, response
+from rest_framework import generics, response, status
 from rest_framework.permissions import IsAuthenticated
 
 from users.models import PersonalCharacteristics, PhysicalActivityLevel, BackPainLevel, Diseases, DecisionLevel2
@@ -19,7 +19,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return super(UserViewSet, self).get_permissions()
 
 
-class PersonalCharacteristicsCreateView(generics.CreateAPIView):
+class PersonalCharacteristicsCreateView(generics.CreateAPIView, generics.GenericAPIView):
     """
     Create Personal Characteristics instance for a user
     """
@@ -31,6 +31,15 @@ class PersonalCharacteristicsCreateView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         request.data["user"] = request.user.id
         return super().create(request, args, kwargs)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user_pc = PersonalCharacteristics.objects.filter(user=request.user).last()
+            serializer = self.get_serializer(data=user_pc)
+            serializer.is_valid(raise_exception=False)
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class PersonalCharacteristicsDetailUpdateView(generics.RetrieveUpdateAPIView):

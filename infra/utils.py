@@ -40,6 +40,10 @@ def multiply_list_with(number, list_to_multiply) -> list:
     return list(np.array(list(list_to_multiply)) * float(number))
 
 
+def add_scalar_to_list_items(scalar, list_to_add) -> list:
+    return [scalar + item for item in list_to_add]
+
+
 def subtract_then_average(list1, list2) -> float:
     difference = np.array(list1) - np.array(list2)
     return np.average(difference)

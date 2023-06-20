@@ -44,7 +44,7 @@ class PersonalCharacteristics(models.Model):
         verbose_name_plural = "Personal Characteristics"
 
     def __str__(self):
-        return self.user.username.capitalize()
+        return f"{self.user.username.capitalize()}'s Personal Characteristics"
 
 
 class PhysicalActivityLevel(models.Model):

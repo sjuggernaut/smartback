@@ -19,6 +19,13 @@ Triggers sensors to start sending the data for the given treatment session. (Ses
 
 class TreatmentStartDataSendAssembler(KafkaAssembler):
     def assemble(self, command_data: dict) -> Alert:
+        """
+        Triggers start of sending data from Sensors to Kafka topics.
+        - This creates a new treatment cycle record ie. SessionTreatmentIPCReceived
+        - Eventually the new treatment cycle records will be created once the existing record is complete.
+        :param command_data:
+        :return:
+        """
         try:
             logger.info(f"Received Treatment start data send command from the User Interface.")
 

@@ -6,6 +6,9 @@ from infra.exceptions.filter_out import FilterOutException
 from infra.exceptions.invalid_command import InvalidCommandException
 from infra.domain.commands import Commands
 
+from infra.domain.alert.calibration_alert import CalibrationEndAlert
+from infra.domain.sensor_commands import SensorCommands
+
 logger = logging.getLogger(__name__)
 
 _COMMAND_FROM_BACKEND = "from_backend"
@@ -29,6 +32,15 @@ class IPCEngineCommandAssembler:
 
             command_text = event.get("command")
             command = Commands.__getitem__(command_text)
+
+            if command == Commands.calibration_end:
+                calibration_end_alert = CalibrationEndAlert(command=SensorCommands.set_calibration_end.name, session="")
+                self._kafka_service.send(calibration_end_alert)
+
+            if command == Commands.treatment_one_min_end:
+                treatment_one_min_end_alert = CalibrationEndAlert(command=SensorCommands.data_send_pause.name, session="")
+                self._kafka_service.send(treatment_one_min_end_alert)
+
             alert = self.get_assembler(command).assemble(event)
             if alert:
                 self._kafka_service.send(alert)

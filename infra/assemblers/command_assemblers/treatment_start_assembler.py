@@ -51,7 +51,21 @@ class TreatmentStartAssembler(KafkaAssembler):
             raise FilterOutException(__name__, e)
 
     def _create_session(self, user_id):
+        """
+        If there's a Session object with type=Treatment, status=CREATED or STARTED user=user: return it
+        Else: create a new record with the params
+        :param user_id:
+        :return:
+        """
         user = get_user_model().objects.get(pk=user_id)
+
+        latest_session = Session.objects.filter(user=user, status__in=(StatusChoices.CREATED, StatusChoices.STARTED),
+                                                type=SessionTypes.TREATMENT).last()
+
+        if latest_session:
+            logger.info("Responding with existing treatment session.")
+            return latest_session
+
         session = Session(user=user, type=SessionTypes.TREATMENT, status=StatusChoices.CREATED)
         session.save()
         return session

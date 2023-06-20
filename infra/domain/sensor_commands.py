@@ -23,8 +23,9 @@ class SensorCommands(Enum):
                            "assembler": None}  # Makes the sensors send data for calibration
     set_treatment_start_data_send = {"name": "treatment_start_data_send",
                                      "assembler": None}  # Makes the sensors send data for calibration
-    implement_treatment_result = {"name": "implement_treatment_result",
-                                  "assembler": None}
+    implement_treatment_result = {"name": "implement_treatment_result", "assembler": None}
+    treatment_abrupt_end = {"name": "treatment_abrupt_end", "assembler": None}
+    data_send_pause = {"name": "data_send_pause", "assembler": None}
 
     def __init__(self, value):
         if "name" not in value:

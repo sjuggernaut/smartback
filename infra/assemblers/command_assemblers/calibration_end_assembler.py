@@ -30,11 +30,11 @@ class CalibrationEndAssembler(KafkaAssembler):
 
         try:
             user = command_data.get("user")
-            session = Session.objects.filter(user=user, status=StatusChoices.CREATED,
+            session = Session.objects.filter(user=user, status__in=(StatusChoices.CREATED, StatusChoices.STARTED),
                                              type=SessionTypes.CALIBRATION).last()
 
-            procedure_name = command_data.get("procedure")
-            procedure = Procedure.objects.get(name=procedure_name)
+            procedure = command_data.get("procedure")
+            procedure = Procedure.objects.get(id=procedure)
 
             data_processor = CalibrationEndDataProcessor(session)
             data_processor.process_user_calibration_session_data(session, procedure)

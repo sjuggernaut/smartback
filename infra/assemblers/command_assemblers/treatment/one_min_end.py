@@ -8,6 +8,7 @@ from time import sleep
 
 from infra.utils import *
 from infra.models import *
+import numpy as np
 from infra.domain.dataclasses import *
 
 logger = logging.getLogger(__name__)
@@ -93,19 +94,25 @@ class TreatmentOneMinuteEndDataProcessor:
 
     @staticmethod
     def update_ipc_processing_status(session: Session):
-        SessionTreatmentIPCReceived.objects.filter(session=session,
-                                                   processing_status=False,
-                                                   semg_received=True,
-                                                   inertial_received=True,
-                                                   ir_received=True).update(processing_status=True)
+        # SessionTreatmentIPCReceived.objects.filter(session=session,
+        #                                            processing_status=False,
+        #                                            semg_received=True,
+        #                                            inertial_received=True,
+        #                                            ir_received=True).update(processing_status=True)
+
+        SessionTreatmentIPCReceived.objects.filter(session=session, processing_status=False).update(
+            processing_status=True)
 
     @staticmethod
     def is_ipc_commands_received(session: Session) -> DataClassIPCCommandReceived:
-        session_query = SessionTreatmentIPCReceived.objects.filter(session=session,
-                                                                   processing_status=False,
-                                                                   semg_received=True,
-                                                                   inertial_received=True,
-                                                                   ir_received=True)
+        # session_query = SessionTreatmentIPCReceived.objects.filter(session=session,
+        #                                                            processing_status=False,
+        #                                                            semg_received=True,
+        #                                                            inertial_received=True,
+        #                                                            ir_received=True)
+
+        session_query = SessionTreatmentIPCReceived.objects.filter(session=session, processing_status=False)
+
         session_exists = session_query.exists()
         session_instance = session_query.first()
         return DataClassIPCCommandReceived(session_exists=session_exists, session_instance=session_instance)
@@ -132,34 +139,32 @@ class TreatmentOneMinuteEndDataProcessor:
             """
             user_data_mean = TreatmentOneMinuteEndDataProcessor.get_session_one_minute_data_mean(session)
 
-            logger.info("========================================================")
             logger.info("USER DATA MEAN")
             logger.info(user_data_mean)
-            logger.info("========================================================")
 
-            ir_mean = user_data_mean.ir[0]
-
-            thermal_check = is_temp_higher(ir_mean)
-            if thermal_check:
-                """
-                Thermal value from the IR sensor is higher than the allowed value.
-                """
-                logger.warning(
-                    f"Thermal value from the IR sensor is higher than the allowed value. Session : {session.pk}")
-                # raise exception
-                return False
+            """
+            TODO: Uncomment below code after attaching IR sensor
+            """
+            # ir_mean = user_data_mean.ir[0]
+            #
+            # thermal_check = is_temp_higher(ir_mean)
+            # if thermal_check:
+            #     """
+            #     Thermal value from the IR sensor is higher than the allowed value.
+            #     """
+            #     logger.warning(
+            #         f"Thermal value from the IR sensor is higher than the allowed value. Session : {session.pk}")
+            #     # raise exception
+            #     return False
 
             user_treatment_gold_standard = TreatmentOneMinuteEndDataProcessor.get_user_treatment_gold_standard(session)
 
             """
-            Calculate differential values for Inertial sensor, semg 
+            Calculate differential values for Inertial sensor, SEMG 
             """
             differential_values = TreatmentOneMinuteEndDataProcessor.calculate_differential_values(
                 user_treatment_gold_standard,
                 user_data_mean)
-
-            print("User data mean")
-            print(user_data_mean)
 
             """
             Calculate center of mass differential values 
@@ -180,28 +185,27 @@ class TreatmentOneMinuteEndDataProcessor:
     def get_session_one_minute_data_mean(session):
         inertial_data = TreatmentInertialData.objects.filter(session=session, read_status=False)
         semg_data = TreatmentSEMGData.objects.filter(session=session, read_status=False)
-        ir_data = TreatmentIRData.objects.filter(session=session, read_status=False)
+        # ir_data = TreatmentIRData.objects.filter(session=session, read_status=False) # TODO: Uncomment after IR sensors are attached
 
         inertial_data_list = list(inertial_data.values_list(*INERTIAL_DATA_FIELDS))
-        inertial_data_mean = get_mean(inertial_data_list)  # Single row value derived from
+        inertial_data_array = np.array(inertial_data_list)
+        inertial_data_mean = inertial_data_array.mean(0).tolist()
 
-        logger.info("========================================================")
         logger.info("INERTIAL DATA MEAN")
         logger.info(inertial_data_mean)
-        logger.info("========================================================")
 
         semg_data_list = list(semg_data.values_list(*SEMG_DATA_FIELDS))
-        semg_data_mean = get_mean(semg_data_list)
+        semg_data_array = np.array(semg_data_list)
+        semg_data_mean = semg_data_array.mean(0).tolist()
 
-        logger.info("========================================================")
         logger.info("SEMG DATA MEAN")
         logger.info(semg_data_mean)
-        logger.info("========================================================")
 
-        ir_data_list = list(ir_data.values_list('thermal'))
-        ir_data_mean = get_mean(ir_data_list)
+        # ir_data_list = list(ir_data.values_list('thermal'))
+        # ir_data_mean = get_mean(ir_data_list)
 
-        return DataClassUserTreatmentMean(inertial=inertial_data_mean, semg=semg_data_mean, ir=ir_data_mean)
+        # return DataClassUserTreatmentMean(inertial=inertial_data_mean, semg=semg_data_mean, ir=ir_data_mean)
+        return DataClassUserTreatmentMean(inertial=inertial_data_mean, semg=semg_data_mean, ir=[38])
 
     @staticmethod
     def get_user_treatment_gold_standard(session: Session):
@@ -254,13 +258,13 @@ class TreatmentOneMinuteEndDataProcessor:
                          right_semg_index in SEMG_DATA_FIELDS_RIGHT_INDICES]
         right_semg_mean = [right_semg_mean_item for right_semg_mean_index, right_semg_mean_item in
                            enumerate(user_data_mean.semg) if right_semg_mean_index in SEMG_DATA_FIELDS_RIGHT_INDICES]
+
         right_diff = subtract(right_semg_gs, right_semg_mean)
 
         logger.info("========================================================")
         logger.info("DIFFERENTIAL VALUES: RIGHT SEMG")
         logger.info(right_diff)
         logger.info("========================================================")
-
 
         # Left SEMG
         left_semg_gs = [left_semg_item for left_semg_index, left_semg_item in enumerate(user_treatment_gs.semg) if
@@ -274,14 +278,12 @@ class TreatmentOneMinuteEndDataProcessor:
         logger.info(left_diff)
         logger.info("========================================================")
 
-
         semg_differential_value = subtract(right_diff, left_diff)
 
         logger.info("========================================================")
         logger.info("SEMG DIFFERENTIAL VALUES")
         logger.info(semg_differential_value)
         logger.info("========================================================")
-
 
         # ====================== 2. Inertial Calculation ======================
         inertial_differential_value = subtract(user_treatment_gs.inertial, user_data_mean.inertial)
@@ -388,7 +390,7 @@ class TreatmentOneMinuteEndDataProcessor:
         :return: float -  Percentage of the stimulation output value
         """
         logger.info("========================================================")
-        logger.info("FINAL CALCULATION VALUE")
+        logger.info("FINAL DIFFERENTIAL CALCULATION VALUE")
         logger.info(com_differential)
         logger.info(inertial_differential)
         logger.info("========================================================")

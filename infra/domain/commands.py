@@ -8,12 +8,13 @@ from infra.assemblers.command_assemblers.calibration_start_assembler import Cali
 from infra.assemblers.command_assemblers.treatment_start_assembler import TreatmentStartAssembler
 from infra.assemblers.command_assemblers.treatment_one_min_end_assembler import TreatmentOneMinEndAssembler
 from infra.assemblers.command_assemblers.treatment_start_data_send_assembler import TreatmentStartDataSendAssembler
-from infra.producer import Producer
+from infra.assemblers.command_assemblers.treatment_abrupt_end_assembler import TreatmentAbruptEndAssembler
 
 from smartback.configuration import get_config
 
 environment = os.getenv("ENVIRONMENT")
 configuration = get_config(environment)
+
 
 class Commands(Enum):
     # Commands received by the Engine
@@ -26,6 +27,7 @@ class Commands(Enum):
     treatment_one_min_end = {"name": "treatment_one_min_end", "assembler": TreatmentOneMinEndAssembler()}
     treatment_start_data_send = {"name": "treatment_start_data_send", "assembler": TreatmentStartDataSendAssembler()}
     treatment_end = {"name": "treatment_end", "assembler": None}
+    treatment_abrupt_end = {"name": "treatment_abrupt_end", "assembler": TreatmentAbruptEndAssembler()}
 
     def __init__(self, value):
         if "name" not in value:

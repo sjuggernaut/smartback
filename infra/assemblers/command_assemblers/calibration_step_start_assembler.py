@@ -24,7 +24,7 @@ class CalibrationStepStartAssembler(KafkaAssembler):
         logger.info(f"Received Calibration Step Start command from the User Interface.")
 
         if not all(keys in command_data for keys in ("user", "step")):
-            logger.info("Calibration Start: User/step data not found in the message received from the user interface.")
+            logger.info("Calibration Start: User or Step data not found in the message received.")
             return False
 
         """
@@ -34,14 +34,25 @@ class CalibrationStepStartAssembler(KafkaAssembler):
         procedure_step_id = command_data.get("step")
         procedure_step = ProcedureStep.objects.get(id=procedure_step_id)
         user = command_data.get("user")
-        calibration_step = self._create_calibration_step(procedure_step, user)
+
+        active_calibration_session = Session.objects.filter(user=user,
+                                                            status__in=(StatusChoices.CREATED, StatusChoices.STARTED),
+                                                            type=SessionTypes.CALIBRATION).last()
+
+        calibration_step = self._create_calibration_step(procedure_step, active_calibration_session)
+        self._update_session_status(active_calibration_session)
 
         alert = CalibrationStepStartAlert(command=SensorCommands.set_calibration_step_start.name,
                                           step=str(calibration_step.id))
         return alert
 
-    def _create_calibration_step(self, procedure_step: ProcedureStep, user):
-        active_session = Session.objects.filter(user=user, status=StatusChoices.CREATED).last()
-        calibration_step = CalibrationStep(session=active_session, step=procedure_step)
+    def _create_calibration_step(self, procedure_step: ProcedureStep, active_calibration_session):
+        calibration_step = CalibrationStep(session=active_calibration_session, step=procedure_step)
         calibration_step.save()
         return calibration_step
+
+    def _update_session_status(self, session):
+        if session.status != StatusChoices.STARTED:
+            logger.info(f"Updating session status = STARTED for ID = [f{session.pk}]")
+            session.status = StatusChoices.STARTED
+            session.save()

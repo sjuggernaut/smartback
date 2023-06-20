@@ -1,11 +1,11 @@
 import logging
+import numpy as np
 from django.db.models import Q
-import math
 
 from infra.models import *
 from users.models import PersonalCharacteristics
 from infra.utils import get_mean, compare_with_gold_standard, multiply_list_with, subtract_then_average, average, \
-    INERTIAL_DATA_FIELDS, SEMG_DATA_FIELDS
+    INERTIAL_DATA_FIELDS, SEMG_DATA_FIELDS, add_scalar_to_list_items
 from infra.domain.dataclasses import *
 from infra.serializers import UserTreatmentGoldStandardInertialSensorDataSerializer, \
     UserTreatmentGoldStandardSEMGSensorDataSerializer
@@ -16,9 +16,13 @@ logger = logging.getLogger(__name__)
 class CalibrationEndDataProcessor:
     def __init__(self, session: Session):
         self._session = session
-        # user_pc = PersonalCharacteristics.objects.get(user=session.user.id) # TODO: Rollback after meeting
-        user_pc = PersonalCharacteristics.objects.first()
-        self.user_bmi = user_pc.get_bmi
+
+        try:
+            # user_pc = PersonalCharacteristics.objects.get(user=session.user.id)
+            self.user_bmi = 20
+            # self.user_bmi = user_pc.get_bmi
+        except Exception as e:
+            logger.exception(str(e))
 
     def process_user_calibration_session_data(self, session: Session, procedure: Procedure):
         """
@@ -29,17 +33,25 @@ class CalibrationEndDataProcessor:
         :param procedure:
         :return:
         """
+        if not self.user_bmi:
+            logger.warning(
+                "Could not find BMI data for the user. Please check the Personal Characteristics data for the user "
+                "and try this process again")
+
         user_data_mean = self._get_session_sensor_data()
+
         if not user_data_mean:
             logger.warning(
-                f"SESSION ID = [{session.pk}] : Error in processing user calibration end session data. There is no SEMG or Inertial data in the session to process.")
+                f"SESSION ID = [{session.pk}] :: Error in processing user calibration end session data. Could not find SEMG or Inertial data for the session.")
             return False
 
         # Calculate Treatment GS
-        user_calibration_gs = self._calculate_user_calibration_gold_standard(session, procedure)
-        calibration_factor = self.calculate_calibration_factor(user_calibration_gs, user_data_mean)
+        user_calibration_gs = self._calculate_user_calibration_gold_standard(session, procedure) # BMI based value
+        calibration_factor_semg, calibration_factor_inertial = self.calculate_calibration_factor(user_calibration_gs,
+                                                                                                 user_data_mean)
         treatment_gs = self.get_universal_treatment_gold_standard()
-        user_treatment_gs = self.calculate_user_treatment_gold_standard(calibration_factor, treatment_gs)
+        user_treatment_gs = self.calculate_user_treatment_gold_standard(calibration_factor_semg,
+                                                                        calibration_factor_inertial, treatment_gs)
 
         # Save user treatment gold standard and set session data read status to true
         self._save_user_treatment_gold_standard(session, user_treatment_gs)
@@ -49,7 +61,7 @@ class CalibrationEndDataProcessor:
         CalibrationStepSEMGData.objects.filter(session=self._session).update(read_status=True)
         CalibrationStepInertialData.objects.filter(session=self._session).update(read_status=True)
 
-    def calculate_user_treatment_gold_standard(self, calibration_factor: float,
+    def calculate_user_treatment_gold_standard(self, calibration_factor_semg: float, calibration_factor_inertial: float,
                                                universal_treatment_gs: DataClassTreatmentGoldStandard):
         """
         STEP 3
@@ -63,8 +75,9 @@ class CalibrationEndDataProcessor:
         bmi_based_inertial_gs = multiply_list_with(self.user_bmi, universal_treatment_gs.inertial)
 
         # Multiply the Calibration Factor with Treatment Gold standard obtained for User's BMI
-        semg_gs = multiply_list_with(calibration_factor, bmi_based_semg_gs)
-        inertial_gs = multiply_list_with(calibration_factor, bmi_based_inertial_gs)
+        # Adjusting to the calibration factor = Add CF to BMI based GS
+        semg_gs = add_scalar_to_list_items(calibration_factor_semg, bmi_based_semg_gs)
+        inertial_gs = add_scalar_to_list_items(calibration_factor_inertial, bmi_based_inertial_gs)
 
         return DataClassTreatmentGoldStandardForUser(semg=semg_gs, inertial=inertial_gs)
 
@@ -88,13 +101,13 @@ class CalibrationEndDataProcessor:
                                      data_mean: DataClassUserCalibrationMean):
         """
         STEP 2
-        Step 2: user's data mean (vector value) - user's calibration gold standard (vector value) = Calibration factor (scalar value)
+        Step 2: user's data mean (vector value) - user's calibration gold standard (vector value) = Calibration factor for SEMG and Inertial
         :return:
         """
         semg_diff = subtract_then_average(user_gs.semg, data_mean.semg)
         inertial_diff = subtract_then_average(user_gs.inertial, data_mean.inertial)
 
-        return average([semg_diff, inertial_diff])
+        return semg_diff, inertial_diff
 
     def _get_session_sensor_data(self):
         calibration_semg_data = CalibrationStepSEMGData.objects.filter(session=self._session, read_status=False)
@@ -129,8 +142,11 @@ class CalibrationEndDataProcessor:
         if len(semg_data_list) == 0 or len(inertial_data_list) == 0:
             return False
 
-        semg_data_mean = get_mean(semg_data_list)
-        inertial_data_mean = get_mean(inertial_data_list)
+        semg_data_array = np.array(semg_data_list)
+        semg_data_mean = semg_data_array.mean(0).tolist()
+
+        inertial_data_array = np.array(inertial_data_list)
+        inertial_data_mean = inertial_data_array.mean(0).tolist()
 
         return DataClassUserCalibrationMean(semg=semg_data_mean, inertial=inertial_data_mean)
 

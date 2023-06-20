@@ -7,7 +7,6 @@ from infra.models import Session, SessionTypes, StatusChoices
 from infra.domain.alert.calibration_alert import CalibrationStartAlert
 from infra.domain.sensor_commands import SensorCommands
 
-
 from infra.domain.alert.alert import Alert
 from infra.domain.session_type import SessionType
 
@@ -26,6 +25,11 @@ Command Purpose: Calibration phase is to be started when this command is receive
 
 class CalibrationStartAssembler:
     def assemble(self, command_data: dict) -> Alert:
+        """
+        Before creating a new session, make all the sessions status = STOPPED
+        :param command_data:
+        :return:
+        """
         logger.info(f"Received Calibration Start command.")
 
         if "user" not in command_data:
@@ -47,7 +51,19 @@ class CalibrationStartAssembler:
         return alert
 
     def _create_session(self, user_id):
+        """
+        Create a new record only if: there is no existing session for the user_id and SessionType with status = CREATED
+        :param user_id:
+        :return:
+        """
         user = get_user_model().objects.get(pk=user_id)
+        last_created_session = Session.objects.filter(user=user, status=StatusChoices.CREATED,
+                                                      type=SessionTypes.CALIBRATION).last()
+
+        if last_created_session:
+            logger.info("Responding with existing calibration session.")
+            return last_created_session
+
         session = Session(user=user, type=SessionTypes.CALIBRATION, status=StatusChoices.CREATED)
         session.save()
         return session
