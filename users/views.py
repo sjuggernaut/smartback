@@ -19,7 +19,8 @@ class UserViewSet(viewsets.ModelViewSet):
         return super(UserViewSet, self).get_permissions()
 
 
-class PersonalCharacteristicsCreateView(generics.CreateAPIView, generics.GenericAPIView):
+class PersonalCharacteristicsCreateView(generics.CreateAPIView, generics.RetrieveUpdateAPIView,
+                                        generics.GenericAPIView):
     """
     Create Personal Characteristics instance for a user
     """
@@ -35,26 +36,26 @@ class PersonalCharacteristicsCreateView(generics.CreateAPIView, generics.Generic
     def get(self, request, *args, **kwargs):
         try:
             user_pc = PersonalCharacteristics.objects.filter(user=request.user).last()
-            serializer = self.get_serializer(data=user_pc)
-            serializer.is_valid(raise_exception=False)
+            serializer = PersonalCharacteristicsSerializer(user_pc, many=False)
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            request.data["user"] = request.user.id
+            user_pc = PersonalCharacteristics.objects.filter(user=request.user).last()
+            serializer = self.get_serializer(user_pc, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return response.Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class PersonalCharacteristicsDetailUpdateView(generics.RetrieveUpdateAPIView):
+class PhysicalActivityLevelCreateView(generics.CreateAPIView, generics.RetrieveUpdateAPIView, generics.GenericAPIView):
     """
-    Retrieve or Update Personal Characteristics instance for a user
-    """
-    permission_classes = (IsAuthenticated,)
-    queryset = PersonalCharacteristics.objects.all()
-    serializer_class = PersonalCharacteristicsUpdateSerializer
-    pagination_class = None
-
-
-class PhysicalActivityLevelCreateView(generics.CreateAPIView):
-    """
-    Create Physical Activity instance for a user
+    Create Personal Characteristics instance for a user
     """
     permission_classes = (IsAuthenticated,)
     queryset = PhysicalActivityLevel.objects.all()
@@ -65,20 +66,29 @@ class PhysicalActivityLevelCreateView(generics.CreateAPIView):
         request.data["user"] = request.user.id
         return super().create(request, args, kwargs)
 
+    def get(self, request, *args, **kwargs):
+        try:
+            user_pc = PhysicalActivityLevel.objects.filter(user=request.user).last()
+            serializer = PhysicalActivityLevelSerializer(user_pc, many=False)
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
-class PhysicalActivityLevelDetailUpdateView(generics.RetrieveUpdateAPIView):
-    """
-    Retrieve or Update Physical Activity instance for a user
-    """
-    permission_classes = (IsAuthenticated,)
-    queryset = PhysicalActivityLevel.objects.all()
-    serializer_class = PhysicalActivityLevelUpdateSerializer
-    pagination_class = None
+    def update(self, request, *args, **kwargs):
+        try:
+            request.data["user"] = request.user.id
+            user_pc = PhysicalActivityLevel.objects.filter(user=request.user).last()
+            serializer = self.get_serializer(user_pc, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class BackPainLevelCreateView(generics.CreateAPIView):
+class BackPainLevelCreateView(generics.CreateAPIView, generics.RetrieveUpdateAPIView, generics.GenericAPIView):
     """
-    Create BackPainLevel instance for a user
+    Create Personal Characteristics instance for a user
     """
     permission_classes = (IsAuthenticated,)
     queryset = BackPainLevel.objects.all()
@@ -89,20 +99,29 @@ class BackPainLevelCreateView(generics.CreateAPIView):
         request.data["user"] = request.user.id
         return super().create(request, args, kwargs)
 
+    def get(self, request, *args, **kwargs):
+        try:
+            user_pc = BackPainLevel.objects.filter(user=request.user).last()
+            serializer = BackPainLevelSerializer(user_pc, many=False)
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
-class BackPainLevelDetailUpdateView(generics.RetrieveUpdateAPIView):
-    """
-    Retrieve or Update BackPainLevel instance for a user
-    """
-    permission_classes = (IsAuthenticated,)
-    queryset = BackPainLevel.objects.all()
-    serializer_class = BackPainLevelUpdateSerializer
-    pagination_class = None
+    def update(self, request, *args, **kwargs):
+        try:
+            request.data["user"] = request.user.id
+            user_pc = BackPainLevel.objects.filter(user=request.user).last()
+            serializer = self.get_serializer(user_pc, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class DiseasesCreateView(generics.CreateAPIView):
+class DiseasesCreateView(generics.CreateAPIView, generics.RetrieveUpdateAPIView, generics.GenericAPIView):
     """
-    Create Diseases instance for a user
+    Create Personal Characteristics instance for a user
     """
     permission_classes = (IsAuthenticated,)
     queryset = Diseases.objects.all()
@@ -113,20 +132,29 @@ class DiseasesCreateView(generics.CreateAPIView):
         request.data["user"] = request.user.id
         return super().create(request, args, kwargs)
 
+    def get(self, request, *args, **kwargs):
+        try:
+            user_pc = Diseases.objects.filter(user=request.user).last()
+            serializer = DiseasesSerializer(user_pc, many=False)
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
-class DiseasesDetailUpdateView(generics.RetrieveUpdateAPIView):
-    """
-    Retrieve or Update Diseases instance for a user
-    """
-    permission_classes = (IsAuthenticated,)
-    queryset = Diseases.objects.all()
-    serializer_class = DiseasesUpdateSerializer
-    pagination_class = None
+    def update(self, request, *args, **kwargs):
+        try:
+            request.data["user"] = request.user.id
+            user_pc = Diseases.objects.filter(user=request.user).last()
+            serializer = self.get_serializer(user_pc, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class DecisionLevel2CreateView(generics.CreateAPIView):
+class DecisionLevel2CreateView(generics.CreateAPIView, generics.RetrieveUpdateAPIView, generics.GenericAPIView):
     """
-    Create Decision Level 2 instance for a user
+    Create Personal Characteristics instance for a user
     """
     permission_classes = (IsAuthenticated,)
     queryset = DecisionLevel2.objects.all()
@@ -137,12 +165,21 @@ class DecisionLevel2CreateView(generics.CreateAPIView):
         request.data["user"] = request.user.id
         return super().create(request, args, kwargs)
 
+    def get(self, request, *args, **kwargs):
+        try:
+            user_pc = DecisionLevel2.objects.filter(user=request.user).last()
+            serializer = DecisionLevel2Serializer(user_pc, many=False)
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
-class DecisionLevel2DetailUpdateView(generics.RetrieveUpdateAPIView):
-    """
-    Retrieve or Update Decision Level 2 instance for a user
-    """
-    permission_classes = (IsAuthenticated,)
-    queryset = DecisionLevel2.objects.all()
-    serializer_class = DecisionLevel2UpdateSerializer
-    pagination_class = None
+    def update(self, request, *args, **kwargs):
+        try:
+            request.data["user"] = request.user.id
+            user_pc = DecisionLevel2.objects.filter(user=request.user).last()
+            serializer = self.get_serializer(user_pc, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
