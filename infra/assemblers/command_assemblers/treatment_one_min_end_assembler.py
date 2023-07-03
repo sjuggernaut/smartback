@@ -25,8 +25,7 @@ class TreatmentOneMinEndAssembler(KafkaAssembler):
         try:
             user = command_data.get("user")
 
-            session = Session.objects.filter(user=user, status=StatusChoices.STARTED,
-                                             type=SessionTypes.TREATMENT).last()
+            session = Session.objects.filter(user=user, status=StatusChoices.STARTED, type=SessionTypes.TREATMENT).last()
 
             # data_device_type = command_data.get("device_type")
             # device_type = DeviceTypes.__getitem__(data_device_type)

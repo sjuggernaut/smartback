@@ -5,7 +5,7 @@ from django.db.models import Q
 from infra.models import *
 from users.models import PersonalCharacteristics
 from infra.utils import get_mean, compare_with_gold_standard, multiply_list_with, subtract_then_average, average, \
-    INERTIAL_DATA_FIELDS, SEMG_DATA_FIELDS, add_scalar_to_list_items
+    INERTIAL_DATA_FIELDS, SEMG_DATA_FIELDS, add_scalar_to_list_items, subtract, add_two_lists_element_wise
 from infra.domain.dataclasses import *
 from infra.serializers import UserTreatmentGoldStandardInertialSensorDataSerializer, \
     UserTreatmentGoldStandardSEMGSensorDataSerializer
@@ -19,7 +19,7 @@ class CalibrationEndDataProcessor:
 
         try:
             # user_pc = PersonalCharacteristics.objects.get(user=session.user.id)
-            self.user_bmi = 20
+            self.user_bmi = 17.2
             # self.user_bmi = user_pc.get_bmi
         except Exception as e:
             logger.exception(str(e))
@@ -40,18 +40,28 @@ class CalibrationEndDataProcessor:
 
         user_data_mean = self._get_session_sensor_data()
 
+        logger.info("User data mean")
+        logger.info(user_data_mean)
+
         if not user_data_mean:
             logger.warning(
                 f"SESSION ID = [{session.pk}] :: Error in processing user calibration end session data. Could not find SEMG or Inertial data for the session.")
             return False
 
         # Calculate Treatment GS
-        user_calibration_gs = self._calculate_user_calibration_gold_standard(session, procedure) # BMI based value
+        user_calibration_gs = self._calculate_user_calibration_gold_standard(session, procedure)  # BMI based value
+
+        logger.info(f"BMI based calibration gold standard {user_calibration_gs}")
+
         calibration_factor_semg, calibration_factor_inertial = self.calculate_calibration_factor(user_calibration_gs,
                                                                                                  user_data_mean)
+
+
         treatment_gs = self.get_universal_treatment_gold_standard()
         user_treatment_gs = self.calculate_user_treatment_gold_standard(calibration_factor_semg,
                                                                         calibration_factor_inertial, treatment_gs)
+
+        logger.info(f"User treatment gold standard {user_treatment_gs}")
 
         # Save user treatment gold standard and set session data read status to true
         self._save_user_treatment_gold_standard(session, user_treatment_gs)
@@ -74,10 +84,19 @@ class CalibrationEndDataProcessor:
         bmi_based_semg_gs = multiply_list_with(self.user_bmi, universal_treatment_gs.semg)
         bmi_based_inertial_gs = multiply_list_with(self.user_bmi, universal_treatment_gs.inertial)
 
-        # Multiply the Calibration Factor with Treatment Gold standard obtained for User's BMI
+        logger.info(f"BMI based GS {bmi_based_inertial_gs} {bmi_based_semg_gs}")
+
         # Adjusting to the calibration factor = Add CF to BMI based GS
-        semg_gs = add_scalar_to_list_items(calibration_factor_semg, bmi_based_semg_gs)
-        inertial_gs = add_scalar_to_list_items(calibration_factor_inertial, bmi_based_inertial_gs)
+        # Add each element in the calibration factor list (SEMG and inertial) to the BMI based list (SEMG and inertial)
+        # semg_gs = add_scalar_to_list_items(calibration_factor_semg, bmi_based_semg_gs)
+        # inertial_gs = add_scalar_to_list_items(calibration_factor_inertial, bmi_based_inertial_gs)
+
+        semg_gs = add_two_lists_element_wise(calibration_factor_semg, bmi_based_semg_gs)
+        inertial_gs = add_two_lists_element_wise(calibration_factor_inertial, bmi_based_inertial_gs)
+
+        logger.info("=========================")
+        logger.info(semg_gs)
+        logger.info(inertial_gs)
 
         return DataClassTreatmentGoldStandardForUser(semg=semg_gs, inertial=inertial_gs)
 
@@ -101,11 +120,16 @@ class CalibrationEndDataProcessor:
                                      data_mean: DataClassUserCalibrationMean):
         """
         STEP 2
-        Step 2: user's data mean (vector value) - user's calibration gold standard (vector value) = Calibration factor for SEMG and Inertial
+        Step 2: user's data mean (vector value) - user's calibration gold standard (vector value) = Calibration factor for SEMG and Inertial (Vector value)
         :return:
         """
-        semg_diff = subtract_then_average(user_gs.semg, data_mean.semg)
-        inertial_diff = subtract_then_average(user_gs.inertial, data_mean.inertial)
+        semg_diff = subtract(user_gs.semg, data_mean.semg)
+        inertial_diff = subtract(user_gs.inertial, data_mean.inertial)
+
+        """
+        Subtract but no average of the list of SEMG and Inertial data 
+        """
+        logger.info(f"Calibration factor inertial {inertial_diff} and semg = {semg_diff}")
 
         return semg_diff, inertial_diff
 

@@ -53,6 +53,10 @@ def subtract(list1, list2) -> list:
     return (np.array(list1) - np.array(list2)).tolist()
 
 
+def add_two_lists_element_wise(list1, list2):
+    return np.sum([list1, list2], axis=0)
+
+
 def average(values) -> float:
     return np.average(np.array(values))
 

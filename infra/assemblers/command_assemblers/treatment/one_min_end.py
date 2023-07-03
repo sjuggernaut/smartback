@@ -10,6 +10,7 @@ from infra.utils import *
 from infra.models import *
 import numpy as np
 from infra.domain.dataclasses import *
+from random import randrange
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class TreatmentOneMinuteEndDataProcessor:
 
             return {
                 "energy": stimulation_energy,
-                "site": stimulation_site.side
+                "side": stimulation_site.side
             }
         else:
             # TODO: raise Exception("Session {session.id} hasn't received all three sensor commands for one minute data processing")
@@ -259,7 +260,7 @@ class TreatmentOneMinuteEndDataProcessor:
         right_semg_mean = [right_semg_mean_item for right_semg_mean_index, right_semg_mean_item in
                            enumerate(user_data_mean.semg) if right_semg_mean_index in SEMG_DATA_FIELDS_RIGHT_INDICES]
 
-        right_diff = subtract(right_semg_gs, right_semg_mean)
+        right_diff = subtract(right_semg_gs, right_semg_mean)  # This is a list of 4 SEMG values
 
         logger.info("========================================================")
         logger.info("DIFFERENTIAL VALUES: RIGHT SEMG")
@@ -278,7 +279,8 @@ class TreatmentOneMinuteEndDataProcessor:
         logger.info(left_diff)
         logger.info("========================================================")
 
-        semg_differential_value = subtract(right_diff, left_diff)
+        semg_differential_value = subtract(right_diff,
+                                           left_diff)  # TODO: Check this - this is a list of 4 values from SEMG
 
         logger.info("========================================================")
         logger.info("SEMG DIFFERENTIAL VALUES")
@@ -286,7 +288,8 @@ class TreatmentOneMinuteEndDataProcessor:
         logger.info("========================================================")
 
         # ====================== 2. Inertial Calculation ======================
-        inertial_differential_value = subtract(user_treatment_gs.inertial, user_data_mean.inertial)
+        inertial_differential_value = subtract(user_treatment_gs.inertial,
+                                               user_data_mean.inertial)  # TODO: Check this - this is a list of 18 Inertial joint angles
 
         logger.info("========================================================")
         logger.info("INERTIAL DIFFERENTIAL VALUES")
@@ -359,12 +362,13 @@ class TreatmentOneMinuteEndDataProcessor:
         # ==============================================================================
         # FINALIZE THE SIDE OF STIMULATION SITE
         # ==============================================================================
-        if semg_result_side is None:
-            return inertial_result_side
-        elif inertial_result_side == semg_result_side:
-            return inertial_result_side
-        else:
-            return semg_result_side
+        return StimulationSide.right
+        # if semg_result_side is None:
+        #     return inertial_result_side
+        # elif inertial_result_side == semg_result_side:
+        #     return inertial_result_side
+        # else:
+        #     return semg_result_side
 
     @staticmethod
     def get_center_of_mass_differential(inertial_differential: list):
@@ -395,6 +399,15 @@ class TreatmentOneMinuteEndDataProcessor:
         logger.info(inertial_differential)
         logger.info("========================================================")
 
-        energy = (average(com_differential) * average(inertial_differential)) / 60
+        # Original formula retained
+        energy_old = (average(com_differential) * average(inertial_differential)) / 60
+        logger.info(f"Old energy result value for this session = {energy_old}")
 
-        return energy * 100
+        energy = ((average(com_differential) * average(inertial_differential)) / 10) / 60
+
+        logger.info(f"(Updated) Final result value for this session = {energy}")
+
+        return abs(energy) * 100
+
+        # Temporary code to send a randomly picked value under 25% to the raspberry PI PCBs.
+        # return randrange(25)
