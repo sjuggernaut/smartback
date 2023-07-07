@@ -109,7 +109,8 @@ def _validated_get_from_env(environment_variable):
 
 def _get_kafka_bootstrap_servers(environment):
     if environment == _LOCAL_ENVIRONMENT:
-        return os.getenv("KAFKA_HOST", "kafka:29092")
+        return _validated_get_from_env(f"KAFKA_BOOTSTRAP_SERVERS")
+        # return os.getenv("KAFKA_HOST", "kafka:29092")
     try:
         return _validated_get_from_env(f"KAFKA_BOOTSTRAP_SERVERS")
     except ValueError:
