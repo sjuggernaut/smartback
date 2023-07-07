@@ -44,7 +44,7 @@ class PersonalCharacteristicsCreateView(generics.CreateAPIView, generics.Retriev
             serializer = PersonalCharacteristicsSerializer(user_pc, many=False)
             return response.Response(serializer.data, status=status.HTTP_200_OK)
         except PersonalCharacteristics.DoesNotExist:
-            return response.Response(status=status.HTTP_204_NO_CONTENT)
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -78,9 +78,12 @@ class PhysicalActivityLevelCreateView(generics.CreateAPIView, generics.RetrieveU
 
     def get(self, request, *args, **kwargs):
         try:
-            user_pc = PhysicalActivityLevel.objects.filter(user=request.user).last()
-            serializer = PhysicalActivityLevelSerializer(user_pc, many=False)
-            return response.Response(serializer.data, status=status.HTTP_200_OK)
+            user_pa = PhysicalActivityLevel.objects.filter(user=request.user).last()
+            if user_pa:
+                serializer = PhysicalActivityLevelSerializer(user_pa, many=False)
+                return response.Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return response.Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -114,9 +117,12 @@ class BackPainLevelCreateView(generics.CreateAPIView, generics.RetrieveUpdateAPI
 
     def get(self, request, *args, **kwargs):
         try:
-            user_pc = BackPainLevel.objects.filter(user=request.user).last()
-            serializer = BackPainLevelSerializer(user_pc, many=False)
-            return response.Response(serializer.data, status=status.HTTP_200_OK)
+            backpain_level = BackPainLevel.objects.filter(user=request.user).last()
+            if backpain_level:
+                serializer = BackPainLevelSerializer(backpain_level, many=False)
+                return response.Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return response.Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -150,9 +156,12 @@ class DiseasesCreateView(generics.CreateAPIView, generics.RetrieveUpdateAPIView,
 
     def get(self, request, *args, **kwargs):
         try:
-            user_pc = Diseases.objects.filter(user=request.user).last()
-            serializer = DiseasesSerializer(user_pc, many=False)
-            return response.Response(serializer.data, status=status.HTTP_200_OK)
+            user_diseases = Diseases.objects.filter(user=request.user).last()
+            if user_diseases:
+                serializer = DiseasesSerializer(user_diseases, many=False)
+                return response.Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return response.Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -186,9 +195,12 @@ class DecisionLevel2CreateView(generics.CreateAPIView, generics.RetrieveUpdateAP
 
     def get(self, request, *args, **kwargs):
         try:
-            user_pc = DecisionLevel2.objects.filter(user=request.user).last()
-            serializer = DecisionLevel2Serializer(user_pc, many=False)
-            return response.Response(serializer.data, status=status.HTTP_200_OK)
+            level2 = DecisionLevel2.objects.filter(user=request.user).last()
+            if level2:
+                serializer = DecisionLevel2Serializer(level2, many=False)
+                return response.Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return response.Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
 

@@ -44,6 +44,13 @@ class Session(models.Model):
                             max_length=256)  # SessionType
 
 
+class CalibrationAndTreatmentSessionRelation(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    calibration_session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='calibration_link_session')
+    treatment_session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='treatment_link_session')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 """
 ========================================================================================================
 Generic Sensor Data Models 

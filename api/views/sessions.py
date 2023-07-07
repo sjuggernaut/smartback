@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status, mixins, generics
 
 from infra.models import Session, SessionTypes, StatusChoices, SessionTreatmentIPCReceived
+from users.models import DecisionLevel2
 from infra.domain.alert.generic_sensor_alert import SessionStartAlert
 from infra.domain.commands import Commands
 from api.serializers.sessions import SessionSerializer, SessionDetailSerializer
@@ -129,6 +130,8 @@ class SessionSegmentsView(generics.GenericAPIView, mixins.ListModelMixin, mixins
         return Response(status=status.HTTP_201_CREATED)
 
     # class CalibrationStepCreateView(generics.CreateAPIView):
+
+
 #     """
 #     Add a new Calibration Session Step for the user.
 #     This means the FE will start calibration process for a Procedure Step
@@ -161,3 +164,66 @@ class SessionSegmentsView(generics.GenericAPIView, mixins.ListModelMixin, mixins
 #             logger.exception(f"There is an error while adding a calibration step. [{exception}]")
 #             return Response({"message": "Duplicate calibration step failed to add."},
 #                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class DecisionToProceedView(generics.GenericAPIView):
+    """
+    Check if the user is eligible to proceed to sessions based on the Decision questionnaire
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = None
+    pagination_class = None
+    scoring_map = {
+        "1-4 weeks": 1,
+        "4-8 weeks": 1,
+        "Pain in the upper region of your back": 1,
+        "Pain in the middle region of your back": 1,
+        "Pain in the lower region of your back": 1,
+        "Comes and goes": 3,
+        "Constant": 2,
+        "During the morning": 1,
+        "In the afternoon": 2,
+        "In the evening": 3,
+        "At night": 2,
+        "Present entire day": 0,
+        "Pain starts with physical activity": 1,
+        "Pain ends with physical activity": 2,
+        "Pain starts after physical activity": 3,
+        "Pain is not related with physical activity": 1,
+        "Pain relieved with rest": 3,
+        "Pain starts while resting": 2,
+        "Pain is not related with rest": 1,
+        "Pain is localised": 3,
+        "Pain is spreading to back only": 2,
+        "Pain is spreading outside of my back area": 1,
+        "Aching": 3,
+        "Burning": 2,
+        "Dull": 3,
+        "Gripping": 1,
+        "Heavy": 2,
+        "Intense": 2,
+        "Prickly": 1,
+        "Sharp": 1,
+        "Shooting": 1,
+        "Stabbing": 1,
+        "Stinging": 1,
+        "Throbbing": 1,
+    }
+
+    def get(self, request, *args, **kwargs):
+        try:
+            decision_q = DecisionLevel2.objects.filter(user=request.user)
+            if decision_q.exists():
+                user_q_values = list(
+                    decision_q.values_list('pain_since', 'pain_location', 'constant_pain', 'pain_start',
+                                           'relation_physical_activity', 'relation_rest', 'is_pain_spreading',
+                                           'pain_description'))[0]
+                user_q_sum = 0
+                for value in user_q_values:
+                    value_score = self.scoring_map.get(value, 0)
+                    logger.info(f"Calculated value {value_score} for Option: {value}")
+                    user_q_sum += value_score
+            return Response(data={"score": user_q_sum, "eligible": True if user_q_sum >= 9 else False},
+                            status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

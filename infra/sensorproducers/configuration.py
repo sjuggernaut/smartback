@@ -1,6 +1,7 @@
 from abc import ABCMeta
 import logging
 import os
+from random import randrange
 
 from kafka.consumer import KafkaConsumerConfiguration
 from kafka.producer import KafkaProducerConfiguration
@@ -85,7 +86,7 @@ class _KafkaConsumerConfiguration(KafkaConsumerConfiguration):
         return _get_kafka_bootstrap_servers(self._environment)
 
     def get_consumer_group_id(self):
-        return f"smartback-{self._environment}"
+        return f"smartback-{self._environment}-{randrange(9999, 99999)}"
 
     def get_consumer_timeout_ms(self):
         return float(os.getenv("KAFKA_CONSUMER_TIMEOUT_MS", "10000"))

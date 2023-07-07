@@ -4,6 +4,7 @@ import os
 
 from infra.consumer import KafkaConsumerConfiguration
 from infra.producer import KafkaProducerConfiguration
+from random import randrange
 
 _PRODUCTION_ENVIRONMENT = "production"
 _STAGING_ENVIRONMENT = "staging"
@@ -81,22 +82,22 @@ class _TestingAlertConfiguration(AlertConfiguration):
         super(self.__class__, self).__init__(_TESTING_ENVIRONMENT)
 
     def get_kafka_inertial_sensor_topic(self):
-        return "inertialsensor-alerts-local"
+        return "inertialsensor-alerts-testing"
 
     def get_kafka_ir_sensor_topic(self):
-        return "irsensor-alerts-local"
+        return "irsensor-alerts-testing"
 
     def get_kafka_semg_sensor_topic(self):
-        return "semgsensor-alerts-local"
+        return "semgsensor-alerts-testing"
 
     def get_kafka_ipc_topic(self):
-        return "ipc-alerts-local"
+        return "ipc-alerts-testing"
 
     def get_kafka_ipc_engine_topic(self):
-        return "ipc-engine-alerts-local"
+        return "ipc-engine-alerts-testing"
 
     def get_kafka_ipc_results_topic(self):
-        return "ipc-engine-alerts-local"
+        return "ipc-engine-alerts-testing"
 
 
 def _validated_get_from_env(environment_variable):
@@ -123,7 +124,8 @@ class _KafkaConsumerConfiguration(KafkaConsumerConfiguration):
         return _get_kafka_bootstrap_servers(self._environment)
 
     def get_consumer_group_id(self):
-        return f"smartback-{self._environment}"
+        host = os.getenv("HOSTNAME", "localhost")
+        return f"smartback-{self._environment}-{host}"
 
     def get_consumer_timeout_ms(self):
         return float(os.getenv("KAFKA_CONSUMER_TIMEOUT_MS", "10000"))
