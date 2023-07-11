@@ -10,7 +10,7 @@ services:
     volumes:
       - .:/app/
     ports:
-      - 8001:8001
+      - 80:80
     env_file:
       - ./.env
     depends_on:
