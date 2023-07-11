@@ -43,6 +43,6 @@ class CalibrationEndAssembler(KafkaAssembler):
             data_processor.process_user_calibration_session_data(session, procedure)
 
             # Send calibration_stop command to user's sensors to stop the data sending process
-            return CalibrationEndAlert(command=SensorCommands.set_calibration_end.name, session=session.id)
+            return CalibrationEndAlert(command=SensorCommands.set_calibration_end.name, session=str(session.id))
         except Exception as e:
             raise FilterOutException(__name__, e)
