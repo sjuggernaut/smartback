@@ -7,7 +7,7 @@ from infra.domain.command_process import CommandProcess
 from infra.exceptions.filter_out import FilterOutException
 from infra.domain.alert.generic_sensor_alert import TreatmentStartAlert
 from infra.domain.sensor_commands import SensorCommands
-from infra.models import Session, SessionTypes, StatusChoices
+from infra.models import Session, SessionTypes, StatusChoices, CalibrationAndTreatmentSessionRelation
 
 from infra.domain.session_type import SessionType
 from infra.domain.alert.alert import Alert
@@ -36,9 +36,15 @@ class TreatmentStartAssembler(KafkaAssembler):
 
             # Get the user who has triggered calibration start command
             user_id = command_data.get("user")
+            user = get_user_model().objects.get(pk=user_id)
 
             # Create a treatment session to be set in all the sensors' ENV
-            session = self._create_session(user_id)
+            session = self._create_session(user)
+
+            # Link Calibration to treatment session
+            link_record = self._link_calibration_to_treatment(session, user)
+            if link_record:
+                logger.info(f"Linked Sessions: [Treatment] {str(session.pk)} to Calibration {str(link_record.pk)}")
 
             # Produce the session to sensors.
             alert = TreatmentStartAlert(command=SensorCommands.set_treatment_start.name,
@@ -50,15 +56,13 @@ class TreatmentStartAssembler(KafkaAssembler):
         except Exception as e:
             raise FilterOutException(__name__, e)
 
-    def _create_session(self, user_id):
+    def _create_session(self, user):
         """
-        If there's a Session object with type=Treatment, status=CREATED or STARTED user=user: return it
-        Else: create a new record with the params
+        If there's a Session object with type=Treatment, status=CREATED or STARTED user=user: use that session
+        Else: create a new session record with the given parameters
         :param user_id:
         :return:
         """
-        user = get_user_model().objects.get(pk=user_id)
-
         latest_session = Session.objects.filter(user=user, status__in=(StatusChoices.CREATED, StatusChoices.STARTED),
                                                 type=SessionTypes.TREATMENT).last()
 
@@ -69,3 +73,15 @@ class TreatmentStartAssembler(KafkaAssembler):
         session = Session(user=user, type=SessionTypes.TREATMENT, status=StatusChoices.CREATED)
         session.save()
         return session
+
+    def _link_calibration_to_treatment(self, treatment_session, user):
+        calibration_session = Session.objects.filter(user=user,
+                                                     status=StatusChoices.COMPLETED,
+                                                     type=SessionTypes.CALIBRATION).order_by('started_at').last()
+
+        if calibration_session:
+            link = CalibrationAndTreatmentSessionRelation(calibration_session=calibration_session,
+                                                          treatment_session=treatment_session)
+            link.save()
+            return link
+        return False

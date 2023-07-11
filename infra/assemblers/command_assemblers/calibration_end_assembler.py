@@ -33,6 +33,7 @@ class CalibrationEndAssembler(KafkaAssembler):
             session = Session.objects.filter(user=user, status__in=(StatusChoices.CREATED, StatusChoices.STARTED),
                                              type=SessionTypes.CALIBRATION).last()
 
+            # Update session status to Complete
             session.status = StatusChoices.COMPLETED
             session.save()
 
