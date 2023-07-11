@@ -22,6 +22,8 @@ services:
     build: ./nginx
     ports:
       - 1337:80
+    volumes:
+      - static:/app/static/admin/
     depends_on:
       - api
 
