@@ -18,6 +18,13 @@ services:
     links:
       - db:db
 
+  nginx:
+    build: ./nginx
+    ports:
+      - 1337:80
+    depends_on:
+      - api
+
   db:
     image: postgres:13.0-alpine
     ports:

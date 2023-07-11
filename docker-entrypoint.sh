@@ -14,7 +14,8 @@ case "$1" in
       python3 manage.py create_super_user
 
       echo "Starting server"
-      python3 manage.py runserver 0.0.0.0:80
+#      python3 manage.py runserver 0.0.0.0:80
+      gunicorn smartback.wsgi:application --bind 0.0.0.0:80
   ;;
   kafka-backend)
       echo "Launching Sensor Consumers"

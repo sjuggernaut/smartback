@@ -399,11 +399,14 @@ class TreatmentOneMinuteEndDataProcessor:
         logger.info(inertial_differential)
         logger.info("========================================================")
 
+        # Remove center of mass values from the inertial differential
+        new_inertial_differential = inertial_differential[: len(inertial_differential) - 3]
+
         # Original formula retained
-        energy_old = (average(com_differential) * average(inertial_differential)) / 60
+        energy_old = (average(com_differential) * average(new_inertial_differential)) / 60
         logger.info(f"Old energy result value for this session = {energy_old}")
 
-        energy = ((average(com_differential) * average(inertial_differential)) / 10) / 60
+        energy = ((average(com_differential) * average(new_inertial_differential)) / 10) / 60
 
         logger.info(f"(Updated) Final result value for this session = {energy}")
 
