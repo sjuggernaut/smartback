@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'management',
     'users',
     'calibration',
-    'api'
+    'api',
+    'health_check',
 ]
 
 MIDDLEWARE = [
