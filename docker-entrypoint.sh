@@ -9,13 +9,15 @@ case "$1" in
 #      # Apply database migrations
 #      echo "Apply new database migrations"
 #      python3 manage.py migrate
+      echo "Collect static files"
+      python3 manage.py collectstatic --noinput
 
       echo "Creating superuser"
       python3 manage.py create_super_user
 
       echo "Starting server"
 #      python3 manage.py runserver 0.0.0.0:80
-      gunicorn smartback.wsgi:application --bind 0.0.0.0:80
+      gunicorn smartback.wsgi:application --bind 0.0.0.0:8000
   ;;
   kafka-backend)
       echo "Launching Sensor Consumers"
