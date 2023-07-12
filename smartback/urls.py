@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.authtoken.views import obtain_auth_token
 
+admin.site.site_header = 'Spinort Administration'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
