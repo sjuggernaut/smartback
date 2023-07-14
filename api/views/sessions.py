@@ -226,4 +226,5 @@ class DecisionToProceedView(generics.GenericAPIView):
             return Response(data={"score": user_q_sum, "eligible": True if user_q_sum >= 9 else False},
                             status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            logger.exception(f"An exception occured when calculating the decision score. {str(e)}")
+            return Response(data={"score": None, "eligible": False}, status=status.HTTP_200_OK)
