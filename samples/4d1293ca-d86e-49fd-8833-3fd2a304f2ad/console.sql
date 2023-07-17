@@ -1,0 +1,13 @@
+-- Insert procedure --
+-- INSERT INTO public.infra_procedure (id, name) VALUES ('16230f16-d998-4350-83e7-c72b7d671c8b', 'Test_Procedure');
+
+-- Insert procedure steps --
+-- INSERT INTO public.infra_procedurestep (id, name, procedure_id) VALUES ('951a2a50-0198-4193-827d-8fe1a3d49097', 'Test_Procedure_Step_1', '16230f16-d998-4350-83e7-c72b7d671c8b');
+-- INSERT INTO public.infra_procedurestep (id, name, procedure_id) VALUES ('478b1374-7c43-41fb-805d-ba83aa5d6ad5', 'Test_Procedure_Step_2', '16230f16-d998-4350-83e7-c72b7d671c8b');
+-- INSERT INTO public.infra_procedurestep (id, name, procedure_id) VALUES ('4d396883-f493-41eb-9a3e-226f488ef929', 'Test_Procedure_Step_3', '16230f16-d998-4350-83e7-c72b7d671c8b');
+
+-- INSERT INTO public.infra_proceduregoldstandardinertialdata (l5s1_lateral, l5s1_axial, l5s1_flexion, l4l3_lateral, l4l3_axial, l4l3_flexion, l1t12_lateral, l1t12_axial, l1t12_flexion, t9t8_lateral, t9t8_axial, t9t8_flexion, t1c7_lateral, t1c7_axial, t1c7_flexion, c1head_lateral, c1head_axial, c1head_flexion, com_posx, com_posy, com_posz, data_id, is_final_data, procedure_id) VALUES (0.400886014, 2.197820444, -3.305499171, 0.247030678, 0.961523789, -7.294009358, 0.247129546, 0.961500455, -1.473572527, 0.106872694, 0.734967646, 4.727210009, -1.248159124, 0.567462142, 11.97410542, -2.081590915, 1.561026778, -13.78888785, -0.015382447, 1.188380513, 0.964831285, '5814afd7-0627-43c6-a44c-3671073fcbbd', true, '16230f16-d998-4350-83e7-c72b7d671c8b');
+-- INSERT INTO public.infra_proceduregoldstandardsemgdata (rightc4_paraspinal, leftc4_paraspinal, right_multifidus, left_multifidus, data_id, is_final_data, procedure_id) VALUES (-0.01011, -0.00638, -0.01974, 0.01174, '475f100d-baf4-4868-8923-3b4341443f17', true, '16230f16-d998-4350-83e7-c72b7d671c8b');
+
+-- INSERT INTO public.infra_treatmentgoldstandardinertialdata (l5s1_lateral, l5s1_axial, l5s1_flexion, l4l3_lateral, l4l3_axial, l4l3_flexion, l1t12_lateral, l1t12_axial, l1t12_flexion, t9t8_lateral, t9t8_axial, t9t8_flexion, t1c7_lateral, t1c7_axial, t1c7_flexion, c1head_lateral, c1head_axial, c1head_flexion, com_posx, com_posy, com_posz, data_id, is_final_data) VALUES (0.396105193, 2.868829723, -2.669005609, 0.283856125, 1.248639852, -7.013517747, 0.284021727, 1.248604298, -1.193080308, 0.101165293, 0.958483497, 4.936274494, -1.550931342, -0.391704923, 12.93871701, -3.124751167, -0.124140294, -11.9797977, 2.28074, 1.127673574, 0.966691797, '5814afd7-0627-43c6-a44c-3671073fcbb1', true);
+-- INSERT INTO public.infra_treatmentgoldstandardsemgdata (rightc4_paraspinal, leftc4_paraspinal, right_multifidus, left_multifidus, data_id, is_final_data) VALUES (-0.01011, -0.00638, -0.01974, 0.01174, '475f100d-baf4-4868-8923-3b4341443f15', true);
