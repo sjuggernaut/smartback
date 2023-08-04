@@ -11,6 +11,7 @@ from infra.models import *
 import numpy as np
 from infra.domain.dataclasses import *
 from random import randrange
+from infra.exceptions.nan_data_mean import DataMeanNanException
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class TreatmentOneMinuteEndDataProcessor:
             Start processing the data from IRSensorData, SEMGSensorData, InertialSensorData for the session
             """
             stimulation_energy, stimulation_site = TreatmentOneMinuteEndDataProcessor.process_data(session)
+
             TreatmentOneMinuteEndDataProcessor.update_ipc_processing_status(session)
 
             """
@@ -54,6 +56,10 @@ class TreatmentOneMinuteEndDataProcessor:
             Set read_status=True for all the data from TreatmentSEMGData, TreatmentInertialData with session.
             """
             TreatmentOneMinuteEndDataProcessor.set_treatment_data_read_status(session)
+
+            if not stimulation_site or not stimulation_energy:
+                "Error with the one minute cycle data Setting the current one minute cycle"
+                return False
 
             return {
                 "energy": stimulation_energy,
@@ -178,9 +184,18 @@ class TreatmentOneMinuteEndDataProcessor:
                 center_of_mass_differential_values, differential_values.inertial)
 
             return stimulation_energy, stimulation_site
+
+        except DataMeanNanException as ex:
+            logger.info(str(ex))
+            """
+            Set the current one minute cycle to processed and create a new treatment cycle.
+            
+            """
+            return False, False
+
         except Exception as e:
             logger.info(f"Treatment IPC: There is an error during treatment one minute end data processing: [{str(e)}]")
-            return False
+            return False, False
 
     @staticmethod
     def get_session_one_minute_data_mean(session):
@@ -201,6 +216,9 @@ class TreatmentOneMinuteEndDataProcessor:
 
         logger.info("SEMG DATA MEAN")
         logger.info(semg_data_mean)
+
+        if np.isnan(inertial_data_mean) or np.isnan(semg_data_mean):
+            raise DataMeanNanException(session.id)
 
         # ir_data_list = list(ir_data.values_list('thermal'))
         # ir_data_mean = get_mean(ir_data_list)
