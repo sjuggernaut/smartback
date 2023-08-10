@@ -217,7 +217,7 @@ class TreatmentOneMinuteEndDataProcessor:
         logger.info("SEMG DATA MEAN")
         logger.info(semg_data_mean)
 
-        if np.isnan(inertial_data_mean) or np.isnan(semg_data_mean):
+        if np.isnan(inertial_data_mean).any() or np.isnan(semg_data_mean).any():
             raise DataMeanNanException(session.id)
 
         # ir_data_list = list(ir_data.values_list('thermal'))
