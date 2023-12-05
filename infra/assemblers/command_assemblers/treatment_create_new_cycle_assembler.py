@@ -11,7 +11,6 @@ from infra.assemblers.command_assemblers.calibration.calibration_end_data_proces
 logger = logging.getLogger(__name__)
 
 
-
 class TreatmentCreateNewCycleAssembler(KafkaAssembler):
     def assemble(self, command_data: dict) -> Alert:
         """
@@ -49,4 +48,3 @@ class TreatmentCreateNewCycleAssembler(KafkaAssembler):
             ir_received=False
         )
         return session
-
