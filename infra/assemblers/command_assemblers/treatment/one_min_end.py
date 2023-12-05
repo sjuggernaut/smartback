@@ -48,11 +48,6 @@ class TreatmentOneMinuteEndDataProcessor:
             TreatmentOneMinuteEndDataProcessor.update_ipc_processing_status(session)
 
             """
-            Create new record for SessionTreatmentIPCReceived for next one minute loop cycle
-            """
-            TreatmentOneMinuteEndDataProcessor.create_new_ipc_treatment_record(session)
-
-            """
             Set read_status=True for all the data from TreatmentSEMGData, TreatmentInertialData with session.
             """
             TreatmentOneMinuteEndDataProcessor.set_treatment_data_read_status(session)
@@ -80,24 +75,6 @@ class TreatmentOneMinuteEndDataProcessor:
         """
         TreatmentSEMGData.objects.filter(session=session).update(read_status=True)
         TreatmentInertialData.objects.filter(session=session).update(read_status=True)
-
-    @staticmethod
-    def create_new_ipc_treatment_record(session: Session):
-        """
-        Create new record for SessionTreatmentIPCReceived for next one minute loop cycle.
-        Record created for current treatment session for the user.
-        :param session:
-        :return:
-        """
-        if session.type == SessionTypes.TREATMENT:
-            SessionTreatmentIPCReceived.objects.create(session=session,
-                                                       processing_status=False,
-                                                       semg_received=False,
-                                                       inertial_received=False,
-                                                       ir_received=False)
-        else:
-            logger.info(
-                f"The provided session type is not {SessionTypes.TREATMENT}. Skipping creation of IPC Treatment record.")
 
     @staticmethod
     def update_ipc_processing_status(session: Session):

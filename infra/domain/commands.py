@@ -9,6 +9,7 @@ from infra.assemblers.command_assemblers.treatment_start_assembler import Treatm
 from infra.assemblers.command_assemblers.treatment_one_min_end_assembler import TreatmentOneMinEndAssembler
 from infra.assemblers.command_assemblers.treatment_start_data_send_assembler import TreatmentStartDataSendAssembler
 from infra.assemblers.command_assemblers.treatment_abrupt_end_assembler import TreatmentAbruptEndAssembler
+from infra.assemblers.command_assemblers.treatment_create_new_cycle_assembler import TreatmentCreateNewCycleAssembler
 
 from smartback.configuration import get_config
 
@@ -28,6 +29,7 @@ class Commands(Enum):
     treatment_start_data_send = {"name": "treatment_start_data_send", "assembler": TreatmentStartDataSendAssembler()}
     treatment_end = {"name": "treatment_end", "assembler": None}
     treatment_abrupt_end = {"name": "treatment_abrupt_end", "assembler": TreatmentAbruptEndAssembler()}
+    treatment_create_new_cycle = {"name": "treatment_create_new_cycle", "assembler": TreatmentCreateNewCycleAssembler()}
 
     def __init__(self, value):
         if "name" not in value:
