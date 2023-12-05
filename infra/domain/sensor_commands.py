@@ -9,20 +9,13 @@ configuration = get_config(environment)
 
 class SensorCommands(Enum):
     # Commands sent by the Engine to the Sensors
-    set_session_alert = {"name": "set_session_alert",
-                         "assembler": None}  # Sets the session ID on all the Sensor's processes
-    set_calibration_start = {"name": "calibration_start",
-                             "assembler": None}  # Makes the sensors send data for calibration
-    set_calibration_step_start = {"name": "calibration_step_start",
-                                  "assembler": None}  # Makes the sensors send data for calibration
-    set_calibration_end = {"name": "calibration_end",
-                           "assembler": None}  # Makes the sensors stop sending data for calibration
-    set_calibration_pause = {"name": "calibration_pause",
-                             "assembler": None}  # Makes the sensors stop sending data for calibration
-    set_treatment_start = {"name": "treatment_start",
-                           "assembler": None}  # Makes the sensors send data for calibration
-    set_treatment_start_data_send = {"name": "treatment_start_data_send",
-                                     "assembler": None}  # Makes the sensors send data for calibration
+    set_session_alert = {"name": "set_session_alert", "assembler": None}
+    set_calibration_start = {"name": "calibration_start", "assembler": None}
+    set_calibration_step_start = {"name": "calibration_step_start", "assembler": None}
+    set_calibration_end = {"name": "calibration_end", "assembler": None}
+    set_calibration_pause = {"name": "calibration_pause", "assembler": None}
+    set_treatment_start = {"name": "treatment_start", "assembler": None}
+    set_treatment_start_data_send = {"name": "treatment_start_data_send", "assembler": None}
     implement_treatment_result = {"name": "implement_treatment_result", "assembler": None}
     treatment_abrupt_end = {"name": "treatment_abrupt_end", "assembler": None}
     data_send_pause = {"name": "data_send_pause", "assembler": None}
