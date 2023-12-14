@@ -38,7 +38,9 @@ class IPCEngineCommandAssembler:
                 self._kafka_service.send(calibration_end_alert)
 
             if command == Commands.treatment_one_min_end:
-                treatment_one_min_end_alert = CalibrationEndAlert(command=SensorCommands.data_send_pause.name, session="")
+                session = event.get("session")
+                treatment_one_min_end_alert = CalibrationEndAlert(command=SensorCommands.data_send_pause.name,
+                                                                  session=session)
                 self._kafka_service.send(treatment_one_min_end_alert)
 
             alert = self.get_assembler(command).assemble(event)
