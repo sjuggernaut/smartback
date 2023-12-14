@@ -14,12 +14,12 @@ services:
     links:
       - db:db
       - redis:redis
-#    logging:
-#      driver: "awslogs"
-#      options:
-#        awslogs-region: "us-east-2"
-#        awslogs-group: "spinort-testing"
-#        awslogs-stream: "engine-process"
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-region: "us-east-2"
+        awslogs-group: "spinort-testing"
+        awslogs-stream: "engine-process"
 
   redis:
     image: redis:latest
