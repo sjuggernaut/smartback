@@ -20,7 +20,16 @@ class TreatmentCreateNewCycleAssembler(KafkaAssembler):
             session_id = command_data.get("session")
             session = Session.objects.get(id=session_id)
 
-            logger.info(f"Received Create new Treatment cycle command for Session [{session.id}].")
+            logger.info(f"Received request to Create new Treatment cycle command for Session [{session.id}].")
+
+            """
+            Check if session not ENDED
+            """
+            if session.status in (StatusChoices.COMPLETED, StatusChoices.FAILED):
+                raise FilterOutException(
+                    __name__,
+                    f"Will not create a new treatment cycle. Invalid Session provided. Session [{session.id}] is either Completed or Failed"
+                )
 
             treatment_cycle = self.create_new_ipc_treatment_record(session)
             logger.info(f"Created Treatment cycle for Session {session_id} | Treatment Cycle ID = {treatment_cycle.id}")

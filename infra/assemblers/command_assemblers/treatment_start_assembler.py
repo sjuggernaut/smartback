@@ -51,7 +51,6 @@ class TreatmentStartAssembler(KafkaAssembler):
                                         session=str(session.pk),
                                         session_type=SessionType.TREATMENT.name.lower(),
                                         )
-            # devices=command_data.get("devices")
             return alert
         except Exception as e:
             raise FilterOutException(__name__, e)

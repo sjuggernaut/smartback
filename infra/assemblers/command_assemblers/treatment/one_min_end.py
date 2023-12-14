@@ -21,12 +21,7 @@ class TreatmentOneMinuteEndDataProcessor:
     @staticmethod
     def check_all_ipc_commands(session: Session):
         """
-        To check if all the 3 IPC commands are received.
-        If received from all the three (3) sensors - process the data for all the 3 sensors for 1 minute data.
-        Else - return and let the sensors send the command again. then this will succeed.
-        :param session:
-        :param name:
-        :return:
+        :param session:Session
         """
 
         logger.info(f"Processing Treatment one-minute end IPC command for session {session.id}")
@@ -45,6 +40,9 @@ class TreatmentOneMinuteEndDataProcessor:
             """
             stimulation_energy, stimulation_site = TreatmentOneMinuteEndDataProcessor.process_data(session)
 
+            """
+            Set the current treatment cycle to COMPLETE
+            """
             TreatmentOneMinuteEndDataProcessor.update_ipc_processing_status(session)
 
             """
@@ -53,7 +51,9 @@ class TreatmentOneMinuteEndDataProcessor:
             TreatmentOneMinuteEndDataProcessor.set_treatment_data_read_status(session)
 
             if not stimulation_site or not stimulation_energy:
-                "Error with the one minute cycle data Setting the current one minute cycle"
+                """
+                Error with the one minute cycle data Setting the current one minute cycle
+                """
                 return False
 
             return {
@@ -61,9 +61,8 @@ class TreatmentOneMinuteEndDataProcessor:
                 "side": stimulation_site.side
             }
         else:
-            # TODO: raise Exception("Session {session.id} hasn't received all three sensor commands for one minute data processing")
             logger.info(
-                f"Session {session.id} hasn't received all three sensor commands for one minute data processing")
+                f"Error When processing One Minute Treatment cycle data: Session [Session ID = {session.id}] doesn't exist.")
             return False
 
     @staticmethod
@@ -78,23 +77,11 @@ class TreatmentOneMinuteEndDataProcessor:
 
     @staticmethod
     def update_ipc_processing_status(session: Session):
-        # SessionTreatmentIPCReceived.objects.filter(session=session,
-        #                                            processing_status=False,
-        #                                            semg_received=True,
-        #                                            inertial_received=True,
-        #                                            ir_received=True).update(processing_status=True)
-
         SessionTreatmentIPCReceived.objects.filter(session=session, processing_status=False).update(
             processing_status=True)
 
     @staticmethod
     def is_ipc_commands_received(session: Session) -> DataClassIPCCommandReceived:
-        # session_query = SessionTreatmentIPCReceived.objects.filter(session=session,
-        #                                                            processing_status=False,
-        #                                                            semg_received=True,
-        #                                                            inertial_received=True,
-        #                                                            ir_received=True)
-
         session_query = SessionTreatmentIPCReceived.objects.filter(session=session, processing_status=False)
 
         session_exists = session_query.exists()

@@ -18,6 +18,7 @@ urlpatterns = [
     path('sessions/treatment/abruptend', TreatmentAbruptEndView.as_view()),
     path('sessions/treatment/endonemin', TreatmentOneMinuteEndView.as_view()),
     path('sessions/treatment/startonemin', TreatmentStartDataSendOneMinuteView.as_view()),
+    path('sessions/treatment/createnewcycle', TreatmentStartDataSendOneMinuteView.as_view()), # create new api view class
 
     path('decision', DecisionToProceedView.as_view()),
 ]
