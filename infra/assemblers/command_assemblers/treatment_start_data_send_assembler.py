@@ -48,4 +48,4 @@ class TreatmentStartDataSendAssembler(KafkaAssembler):
         session.save()
 
     def _create_ipc_treatment_commands_received(self, session: Session):
-        SessionTreatmentIPCReceived.objects.create(session=session)
+        SessionTreatmentIPCReceived.objects.create(session=session, segment_status=SegmentStatus.DATA_COLLECTION)

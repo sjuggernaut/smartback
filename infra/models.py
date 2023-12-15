@@ -37,7 +37,7 @@ class StatusChoices(models.TextChoices):
 
 class SegmentStatus(models.TextChoices):
     CREATED = "CREATED", "Created"
-    DATA_COLLECTION = "CREATED", "Created"
+    DATA_COLLECTION = "DATA_COLLECTION", "Data Collection"
     STIMULATION = "STIMULATION", "Stimulation"
     ENDED = "ENDED", "Ended"
 

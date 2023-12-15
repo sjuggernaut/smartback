@@ -4,13 +4,11 @@ The 1 minute sending process is started by the command, Commands.treatment_start
 Everytime a one mind end is completed, engine processes that data received for a whole minute and the result is an stimulation output value through the sensors.
 """
 import logging
-from time import sleep
 
 from infra.utils import *
 from infra.models import *
 import numpy as np
 from infra.domain.dataclasses import *
-from random import randrange
 from infra.exceptions.nan_data_mean import DataMeanNanException
 
 logger = logging.getLogger(__name__)
@@ -39,6 +37,11 @@ class TreatmentOneMinuteEndDataProcessor:
             Start processing the data from IRSensorData, SEMGSensorData, InertialSensorData for the session
             """
             stimulation_energy, stimulation_site = TreatmentOneMinuteEndDataProcessor.process_data(session)
+
+            """
+            Set stimulation energy value to the one minute segment record
+            """
+            TreatmentOneMinuteEndDataProcessor.add_segment_stimulation_energy(session)
 
             """
             Set the current treatment cycle to COMPLETE
@@ -79,6 +82,13 @@ class TreatmentOneMinuteEndDataProcessor:
     def update_ipc_processing_status(session: Session):
         SessionTreatmentIPCReceived.objects.filter(session=session, processing_status=False).update(
             processing_status=True)
+
+    @staticmethod
+    def add_segment_stimulation_energy(session: Session, energy: float):
+        SessionTreatmentIPCReceived.objects.filter(
+            session=session,
+            processing_status=False
+        ).update(stimulation_energy=energy, segment_status=SegmentStatus.STIMULATION)
 
     @staticmethod
     def is_ipc_commands_received(session: Session) -> DataClassIPCCommandReceived:

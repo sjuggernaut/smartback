@@ -24,19 +24,7 @@ class TreatmentOneMinEndAssembler(KafkaAssembler):
 
         try:
             user = command_data.get("user")
-
             session = Session.objects.filter(user=user, status=StatusChoices.STARTED, type=SessionTypes.TREATMENT).last()
-
-            # data_device_type = command_data.get("device_type")
-            # device_type = DeviceTypes.__getitem__(data_device_type)
-
-            # device_type_received_field = f"{device_type.label}_received"
-            # device_type_received_time_field = f"{device_type.label}_received_time"
-
-            """
-            Update the SessionTreatmentIPCReceived object based on the type of sensor sender
-            """
-            # SessionTreatmentIPCReceived.objects.filter(session=session).update(**{device_type_received_field: True})
 
             treatment_data = TreatmentOneMinuteEndDataProcessor.check_all_ipc_commands(session)
 
