@@ -41,7 +41,7 @@ class TreatmentOneMinuteEndDataProcessor:
             """
             Set stimulation energy value to the one minute segment record
             """
-            TreatmentOneMinuteEndDataProcessor.add_segment_stimulation_energy(session)
+            TreatmentOneMinuteEndDataProcessor.add_segment_stimulation_energy(session, stimulation_energy)
 
             """
             Set the current treatment cycle to COMPLETE
