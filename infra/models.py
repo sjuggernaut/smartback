@@ -35,6 +35,12 @@ class StatusChoices(models.TextChoices):
     FAILED = "FAILED", "Failed"
 
 
+class SegmentStatus(models.TextChoices):
+    CREATED = "CREATED", "Created"
+    DATA_COLLECTION = "CREATED", "Created"
+    STIMULATION = "STIMULATION", "Stimulation"
+    ENDED = "ENDED", "Ended"
+
 class Session(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
@@ -281,6 +287,9 @@ class SessionTreatmentIPCReceived(models.Model):
     # IR Received data
     ir_received = models.BooleanField(default=False)
     ir_received_time = models.DateTimeField(auto_now_add=True)
+
+    stimulation_energy = models.FloatField(default=None, null=True, blank=True)
+    segment_status = models.CharField(choices=SegmentStatus.choices, default=SegmentStatus.CREATED, max_length=256)
 
 
 class TreatmentSEMGData(GenericSEMGSensorsData):
