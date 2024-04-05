@@ -1,5 +1,0 @@
-/**
-This is a sample message sent from sensors on the topic: IPC to the Detection Engine.
-**/
-{"type": "ipc_command", "session": "978df625-0734-49e3-a84b-b684844a6907", "command":  "calibration_step_start"}
-
