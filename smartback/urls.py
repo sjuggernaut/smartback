@@ -17,10 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.authtoken.views import obtain_auth_token
 
+admin.site.site_header = 'Spinort Administration'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('token/', obtain_auth_token, name='api_token_auth'),
-    path('infra/', include('infra.urls'), name='infra')
-    # path('calibration/', include('calibration.urls'), name='calibration'),
+    path('api/', include('api.urls')),
+    path('healthcheck/', include('health_check.urls'))
 ]

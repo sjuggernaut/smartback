@@ -1,14 +1,12 @@
 from django.core.management.base import BaseCommand
-
+import os
 from infra.providers import launch_providers
 
 
 class Command(BaseCommand):
     help = 'Launch the Sensor Provider Threads'
 
-    def add_arguments(self, parser):
-        parser.add_argument('environment', nargs=1, type=str)
-
     def handle(self, *args, **options):
-        environment = options['environment'][0]
+        environment = os.getenv("ENVIRONMENT", "local")
+        print(f"[Environment] = [{environment}]")
         launch_providers(environment)

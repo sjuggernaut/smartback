@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class DeviceTypes(Enum):
-    device_semg = {"name": "device_semg"}
-    device_inertial = {"name": "device_inertial"}
-    device_ir = {"name": "device_ir"}
+    device_semg = {"name": "device_semg", "label": "semg"}
+    device_inertial = {"name": "device_inertial", "label": "inertial"}
+    device_ir = {"name": "device_ir", "label": "ir"}
 
     def __init__(self, value):
         if "name" not in value:
@@ -13,6 +13,10 @@ class DeviceTypes(Enum):
     @property
     def name(self):
         return self.value["name"]
+
+    @property
+    def label(self):
+        return self.value["label"]
 
     def __str__(self):
         return self.name

@@ -1,0 +1,10 @@
+/**
+This is a sample message sent from Backend to the Sensors
+**/
+{
+  "command": "calibration_start",
+  "session": "SAMPLE_SESSION_ID FROM DB (UUID)",
+  "session_type": "calibration"
+}
+
+

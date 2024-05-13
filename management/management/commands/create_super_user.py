@@ -15,6 +15,7 @@ class Command(BaseCommand):
 
         if not User.objects.filter(username=username).exists():
             logger.info('Creating account for %s (%s)' % (username, email))
+            logger.info(f"Superuser account credentials: {username} / {email} / {password}")
             admin = User.objects.create_superuser(
                 email=email, username=username, password=password)
         else:

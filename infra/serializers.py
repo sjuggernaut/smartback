@@ -1,11 +1,10 @@
 from rest_framework.serializers import ModelSerializer
-from infra.models import SEMGSensorData, InertialSensorData, IRSensorData, Session, CalibrationStep, \
-    CalibrationStepSEMGData, CalibrationStepInertialData, CalibrationStepIRData
+from infra.models import *
 
 
 class SEMGSensorDataSerializer(ModelSerializer):
     class Meta:
-        model = SEMGSensorData
+        model = TreatmentSEMGData
         fields = '__all__'
 
 
@@ -17,7 +16,7 @@ class CalibrationStepSEMGDataSerializer(ModelSerializer):
 
 class InertialSensorDataSerializer(ModelSerializer):
     class Meta:
-        model = InertialSensorData
+        model = TreatmentInertialData
         fields = '__all__'
 
 
@@ -29,7 +28,7 @@ class CalibrationStepInertialDataSerializer(ModelSerializer):
 
 class IRSensorDataSerializer(ModelSerializer):
     class Meta:
-        model = IRSensorData
+        model = GenericIRSensorData
         fields = '__all__'
 
 
@@ -48,4 +47,16 @@ class SessionCreateSerializer(ModelSerializer):
 class CalibrationStepCreateSerializer(ModelSerializer):
     class Meta:
         model = CalibrationStep
+        fields = '__all__'
+
+
+class UserTreatmentGoldStandardInertialSensorDataSerializer(ModelSerializer):
+    class Meta:
+        model = UserGoldStandardInertialData
+        fields = '__all__'
+
+
+class UserTreatmentGoldStandardSEMGSensorDataSerializer(ModelSerializer):
+    class Meta:
+        model = UserGoldStandardSEMGData
         fields = '__all__'

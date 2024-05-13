@@ -1,0 +1,55 @@
+version: '3.3'
+
+services:
+  api:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: start
+    volumes:
+      - .:/app/
+      - static:/app/static
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+    links:
+      - db:db
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-region: "us-east-2"
+        awslogs-group: "spinort-testing"
+        awslogs-stream: "api-process"
+
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    volumes:
+      - static:/app/static
+    depends_on:
+      - api
+
+  db:
+    image: postgres:13.0-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=smartback
+      - POSTGRES_USER=smartback
+      - POSTGRES_PASSWORD=smartback
+
+volumes:
+  pgdata:
+  static:
+
+networks:
+  default:
+    external:
+      name: shared-network-smartback

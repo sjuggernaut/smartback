@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres:13.0-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=smartback
+      - POSTGRES_USER=smartback
+      - POSTGRES_PASSWORD=smartback
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+    external:
+      name: shared-network-smartback

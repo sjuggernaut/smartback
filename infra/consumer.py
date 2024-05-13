@@ -44,6 +44,8 @@ class Consumer(threading.Thread):
         threading.Thread.__init__(self, name=f"kafkaconsumer_[{topic}]")
         self._stop_event = threading.Event()
         self._boostrap_servers = kafka_consumer_configuration.get_bootstrap_servers()
+        self._sasl_plain_username = kafka_consumer_configuration.get_sasl_plain_username()
+        self._sasl_plain_password = kafka_consumer_configuration.get_sasl_plain_password()
         self._topic = topic
         self._group_id = kafka_consumer_configuration.get_consumer_group_id()
         self._consumer_timeout_ms = kafka_consumer_configuration.get_consumer_timeout_ms()
@@ -58,11 +60,15 @@ class Consumer(threading.Thread):
     def run(self):
         try:
             consumer = KafkaConsumer(
-                bootstrap_servers="kafka:29092",
-                auto_offset_reset="latest", # earliest to get all the messages in the queue
+                bootstrap_servers=self._boostrap_servers,
+                sasl_mechanism="PLAIN",
+                security_protocol="SASL_SSL",
+                sasl_plain_username=self._sasl_plain_username,
+                sasl_plain_password=self._sasl_plain_password,
+                auto_offset_reset="latest",  # earliest to get all the messages in the queue
                 api_version=(0, 10, 1),
-                # group_id=self._group_id,
-                group_id=None,
+                group_id=self._group_id,
+                # group_id=None,
                 consumer_timeout_ms=self._consumer_timeout_ms,
                 max_poll_interval_ms=_KAFKA_MAX_INT_VALUE,
                 **self._kwargs

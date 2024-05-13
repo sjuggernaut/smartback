@@ -1,7 +1,6 @@
 from django.db import models
 import uuid
 from django.contrib.auth import get_user_model
-from infra.assemblers.device_types import DeviceTypes
 
 DEVICE_TYPE_CHOICES = (
     ("device_semg", "SEMG"),
@@ -24,7 +23,7 @@ class Devices(models.Model):
 
 class PersonalCharacteristics(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, unique=True, related_name="user_pc")
     birth_year = models.IntegerField(null=True, blank=True)
     height = models.FloatField(null=True, blank=True)  # in cms
     weight = models.FloatField(null=True, blank=True)  # In kgs
@@ -45,7 +44,7 @@ class PersonalCharacteristics(models.Model):
         verbose_name_plural = "Personal Characteristics"
 
     def __str__(self):
-        return self.user.username.capitalize()
+        return f"{self.user.username.capitalize()}'s Personal Characteristics"
 
 
 class PhysicalActivityLevel(models.Model):

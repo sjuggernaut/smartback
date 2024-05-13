@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install dependencies
-RUN apt-get update -y && apt-get install -y postgresql gcc python3-dev musl-dev libmagic-dev
+RUN apt-get update -y && apt-get install -y postgresql gcc python3-dev musl-dev libmagic-dev librdkafka-dev
 
 RUN apt-get install -y bash \
                        python3 \
@@ -33,17 +33,17 @@ RUN pip3 install psycopg2-binary
 COPY ./requirements.txt .
 RUN pip3 install -r requirements.txt
 ADD . /app/
-COPY entrypoint.sh .
+COPY docker-entrypoint.sh .
 
-COPY ./entrypoint.sh .
-RUN sed -i 's/\r$//g' /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+COPY ./docker-entrypoint.sh .
+RUN sed -i 's/\r$//g' /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 COPY start-kafka.sh .
 
 # copy project
 ADD . /app/
 
-
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
+CMD ["start"]

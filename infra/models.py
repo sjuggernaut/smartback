@@ -11,36 +11,60 @@ STATUS_CHOICES = (
     ("FAILED", "Failed"),
 )
 
+SESSION_TYPES = (
+    ("CALIBRATION", "Calibration"),
+    ("TREATMENT", "Treatment"),
+)
+
+"""
+========================================================================================================
+Session Data Models 
+========================================================================================================
+"""
+
+
+class SessionTypes(models.TextChoices):
+    CALIBRATION = "CALIBRATION", "Calibration"
+    TREATMENT = "TREATMENT", "Treatment"
+
+
+class StatusChoices(models.TextChoices):
+    CREATED = "CREATED", "Created"
+    COMPLETED = "COMPLETED", "Completed"
+    STARTED = "STARTED", "Started"
+    FAILED = "FAILED", "Failed"
+
+
+class SegmentStatus(models.TextChoices):
+    CREATED = "CREATED", "Created"
+    DATA_COLLECTION = "DATA_COLLECTION", "Data Collection"
+    STIMULATION = "STIMULATION", "Stimulation"
+    ENDED = "ENDED", "Ended"
 
 class Session(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     started_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0], max_length=256)
-    type = models.CharField(max_length=256)  # SessionType
+    status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.CREATED, max_length=256)
+    type = models.CharField(choices=SessionTypes.choices, default=SessionTypes.CALIBRATION,
+                            max_length=256)  # SessionType
 
 
-class IRSensorData(models.Model):
+class CalibrationAndTreatmentSessionRelation(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    session = models.ForeignKey(
-        Session,
-        on_delete=models.CASCADE,
-        verbose_name="Session"
-    )
-    device = models.ForeignKey(Devices, on_delete=models.PROTECT)
-    thermal = models.FloatField(null=True, blank=True)
-    read_status = models.BooleanField(default=False)
+    calibration_session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='calibration_link_session')
+    treatment_session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='treatment_link_session')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
-class InertialSensorData(models.Model):
-    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    session = models.ForeignKey(
-        Session,
-        on_delete=models.CASCADE,
-        verbose_name="Session"
-    )
-    device = models.ForeignKey(Devices, on_delete=models.PROTECT)
+"""
+========================================================================================================
+Generic Sensor Data Models 
+========================================================================================================
+"""
 
+
+class GenericInertialSensorsData(models.Model):
     l5s1_lateral = models.FloatField(null=True, blank=True)
     l5s1_axial = models.FloatField(null=True, blank=True)
     l5s1_flexion = models.FloatField(null=True, blank=True)
@@ -65,23 +89,43 @@ class InertialSensorData(models.Model):
     c1head_axial = models.FloatField(null=True, blank=True)
     c1head_flexion = models.FloatField(null=True, blank=True)
 
-    read_status = models.BooleanField(default=False)
+    com_posx = models.FloatField(null=True, blank=True)
+    com_posy = models.FloatField(null=True, blank=True)
+    com_posz = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
 
 
-class SEMGSensorData(models.Model):
+class GenericSEMGSensorsData(models.Model):
+    rightc4_paraspinal = models.FloatField(null=True, blank=True)
+    leftc4_paraspinal = models.FloatField(null=True, blank=True)
+    right_multifidus = models.FloatField(null=True, blank=True)
+    left_multifidus = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class GenericIRSensorData(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     session = models.ForeignKey(
         Session,
         on_delete=models.CASCADE,
         verbose_name="Session"
     )
-    device = models.ForeignKey(Devices, on_delete=models.PROTECT)
-    rightc4_paraspinal = models.FloatField(null=True, blank=True)
-    leftc4_paraspinal = models.FloatField(null=True, blank=True)
-    right_multifidus = models.FloatField(null=True, blank=True)
-    left_multifidus = models.FloatField(null=True, blank=True)
-
+    thermal = models.FloatField(null=True, blank=True)
     read_status = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+
+"""
+========================================================================================================
+Calibration Data Models 
+========================================================================================================
+"""
 
 
 class Procedure(models.Model):
@@ -113,123 +157,160 @@ class CalibrationStep(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     read_status = models.BooleanField(default=False)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['session', 'step'], name='Single-Calibration-with-a-step-constraint')
-        ]
+    # class Meta:
+    #     constraints = [
+    #         models.UniqueConstraint(fields=['session', 'step'], name='Single-Calibration-with-a-step-constraint')
+    #     ]
+
+
+class CalibrationStepSEMGData(GenericSEMGSensorsData):
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(
+        Session,
+        on_delete=models.CASCADE,
+        verbose_name="Session"
+    )
+    read_status = models.BooleanField(default=False)
+    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
+
+
+class CalibrationStepInertialData(GenericInertialSensorsData):
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(
+        Session,
+        on_delete=models.CASCADE,
+        verbose_name="Session"
+    )
+    read_status = models.BooleanField(default=False)
+    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
+
+
+class CalibrationStepIRData(GenericIRSensorData):
+    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
+
+
+class ProcedureGoldStandardInertialData(GenericInertialSensorsData):
+    """
+    Model class for Calibration Gold Standard for a given procedure. Calibration process can have multiple procedures.
+
+    Usage Phase: Calibration
+    """
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
+    is_final_data = models.BooleanField(default=False)
+
+
+class ProcedureGoldStandardSEMGData(GenericSEMGSensorsData):
+    """
+    Model class for Calibration Gold Standard for a given procedure. Calibration process can have multiple procedures.
+
+    Usage Phase: Calibration
+    """
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
+    is_final_data = models.BooleanField(default=False)
+
+
+"""
+========================================================================================================
+Treatment Data Models 
+========================================================================================================
+"""
+
+
+class UserGoldStandardInertialData(GenericInertialSensorsData):
+    """
+    Model class for User's gold standard data - used during Treatment phase for the user. The values are created and stored to this model at the end of calibration phase.
+
+    Usage Phase: Treatment
+    """
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    is_final_data = models.BooleanField(default=False)
+
+
+class UserGoldStandardSEMGData(GenericSEMGSensorsData):
+    """
+    Model class for User's gold standard data - used during Treatment phase for the user. The values are created and stored to this model at the end of calibration phase.
+
+    Usage Phase: Treatment
+    """
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    is_final_data = models.BooleanField(default=False)
+
+
+class TreatmentGoldStandardInertialData(GenericInertialSensorsData):
+    """
+    This model is for configuration data of treatment gold standard
+
+    Model class for Treatment Gold standard - only one row data possible in this model at any point in time.
+    Usage Phase: Treatment
+    """
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    is_final_data = models.BooleanField(default=False)
+
+
+class TreatmentGoldStandardSEMGData(GenericSEMGSensorsData):
+    """
+    This model is for configuration data of treatment gold standard
+
+    Model class for Treatment Gold standard - only one row data possible in this model at any point in time.
+    Usage Phase: Treatment
+    """
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    is_final_data = models.BooleanField(default=False)
 
 
 class SessionTreatmentIPCReceived(models.Model):
     """
-    This model records the time and status of the DE receiving one mind end commands for treatment session from sensors
+    This model records the time and status of the engine receiving one min end commands for treatment session from sensors
     Identify the multiple records per session by the processing_status
+
+    This record for a session is created when a new treatment session record is created.
+
+    Usage Phase: Treatment
     """
     id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     session = models.ForeignKey(Session, on_delete=models.CASCADE, default=None)
-    semg_received = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    processing_status = models.BooleanField(default=False)  # Once the loop cycle finishes, set this to True
+
+    # SEMG Received data
+    semg_received = models.BooleanField(default=False)
     semg_received_time = models.DateTimeField(auto_now_add=True)
-    inertial_received = models.BooleanField()
+
+    # Inertial Received data
+    inertial_received = models.BooleanField(default=False)
     inertial_received_time = models.DateTimeField(auto_now_add=True)
-    ir_received = models.BooleanField()
+
+    # IR Received data
+    ir_received = models.BooleanField(default=False)
     ir_received_time = models.DateTimeField(auto_now_add=True)
-    processing_status = models.BooleanField(default=False)
+
+    stimulation_energy = models.FloatField(default=None, null=True, blank=True)
+    segment_status = models.CharField(choices=SegmentStatus.choices, default=SegmentStatus.CREATED, max_length=256)
 
 
-class CalibrationStepSEMGData(SEMGSensorData):
-    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
+class TreatmentSEMGData(GenericSEMGSensorsData):
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(
+        Session,
+        on_delete=models.CASCADE,
+        verbose_name="Session"
+    )
+    read_status = models.BooleanField(default=False)
 
 
-class CalibrationStepInertialData(InertialSensorData):
-    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
+class TreatmentInertialData(GenericInertialSensorsData):
+    data_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(
+        Session,
+        on_delete=models.CASCADE,
+        verbose_name="Session"
+    )
+    read_status = models.BooleanField(default=False)
 
 
-class CalibrationStepIRData(IRSensorData):
-    step = models.ForeignKey(CalibrationStep, on_delete=models.CASCADE, default=None)
-
-
-class ProcedureGoldStandardInertialData(models.Model):
-    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
-    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
-    is_final_data = models.BooleanField(default=False)
-
-    l5s1_lateral = models.FloatField(null=True, blank=True)
-    l5s1_axial = models.FloatField(null=True, blank=True)
-    l5s1_flexion = models.FloatField(null=True, blank=True)
-
-    l4l3_lateral = models.FloatField(null=True, blank=True)
-    l4l3_axial = models.FloatField(null=True, blank=True)
-    l4l3_flexion = models.FloatField(null=True, blank=True)
-
-    l1t12_lateral = models.FloatField(null=True, blank=True)
-    l1t12_axial = models.FloatField(null=True, blank=True)
-    l1t12_flexion = models.FloatField(null=True, blank=True)
-
-    t9t8_lateral = models.FloatField(null=True, blank=True)
-    t9t8_axial = models.FloatField(null=True, blank=True)
-    t9t8_flexion = models.FloatField(null=True, blank=True)
-
-    t1c7_lateral = models.FloatField(null=True, blank=True)
-    t1c7_axial = models.FloatField(null=True, blank=True)
-    t1c7_flexion = models.FloatField(null=True, blank=True)
-
-    c1head_lateral = models.FloatField(null=True, blank=True)
-    c1head_axial = models.FloatField(null=True, blank=True)
-    c1head_flexion = models.FloatField(null=True, blank=True)
-
-
-class ProcedureGoldStandardSEMGData(models.Model):
-    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
-    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
-    is_final_data = models.BooleanField(default=False)
-
-    rightc4_paraspinal = models.FloatField(null=True, blank=True)
-    leftc4_paraspinal = models.FloatField(null=True, blank=True)
-    right_multifidus = models.FloatField(null=True, blank=True)
-    left_multifidus = models.FloatField(null=True, blank=True)
-
-
-class UserGoldStandardInertialData(models.Model):
-    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
-    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    is_final_data = models.BooleanField(default=False)
-
-    l5s1_lateral = models.FloatField(null=True, blank=True)
-    l5s1_axial = models.FloatField(null=True, blank=True)
-    l5s1_flexion = models.FloatField(null=True, blank=True)
-
-    l4l3_lateral = models.FloatField(null=True, blank=True)
-    l4l3_axial = models.FloatField(null=True, blank=True)
-    l4l3_flexion = models.FloatField(null=True, blank=True)
-
-    l1t12_lateral = models.FloatField(null=True, blank=True)
-    l1t12_axial = models.FloatField(null=True, blank=True)
-    l1t12_flexion = models.FloatField(null=True, blank=True)
-
-    t9t8_lateral = models.FloatField(null=True, blank=True)
-    t9t8_axial = models.FloatField(null=True, blank=True)
-    t9t8_flexion = models.FloatField(null=True, blank=True)
-
-    t1c7_lateral = models.FloatField(null=True, blank=True)
-    t1c7_axial = models.FloatField(null=True, blank=True)
-    t1c7_flexion = models.FloatField(null=True, blank=True)
-
-    c1head_lateral = models.FloatField(null=True, blank=True)
-    c1head_axial = models.FloatField(null=True, blank=True)
-    c1head_flexion = models.FloatField(null=True, blank=True)
-
-
-class UserGoldStandardSEMGData(models.Model):
-    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    procedure = models.ForeignKey(Procedure, on_delete=models.CASCADE, default=None)
-    procedure_step = models.ForeignKey(ProcedureStep, on_delete=models.CASCADE, default=None)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    is_final_data = models.BooleanField(default=False)
-
-    rightc4_paraspinal = models.FloatField(null=True, blank=True)
-    leftc4_paraspinal = models.FloatField(null=True, blank=True)
-    right_multifidus = models.FloatField(null=True, blank=True)
-    left_multifidus = models.FloatField(null=True, blank=True)
+class TreatmentIRData(GenericIRSensorData):
+    pass
